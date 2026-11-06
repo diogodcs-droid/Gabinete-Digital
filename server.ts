@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { candidateModels, assertCompleteResponse, errorStatus } from './lib/geminiPolicy';
 
 dotenv.config();
 
@@ -65,7 +66,7 @@ function extractCleanErrorMessage(err: any): string {
   // Provide user-friendly Portuguese translations for well-known Google API errors
   const lower = currentMsg.toLowerCase();
   if (lower.includes('503') || lower.includes('high demand') || lower.includes('unavailable')) {
-    return 'O modelo de inteligência artificial do Google está com alta demanda temporária (Erro 503 - Capacidade em pico). Tentamos modelos alternativos automaticamente. Por favor, aguarde alguns segundos e tente novamente.';
+    return 'O modelo de inteligência artificial do Google está com alta demanda temporária (Erro 503 - Capacidade em pico). Por favor, aguarde alguns segundos e tente novamente.';
   }
   if (lower.includes('429') || lower.includes('resource_exhausted') || lower.includes('quota')) {
     return 'Limite temporário de requisições por minuto atingido (Erro 429). Por favor, aguarde um momento e tente novamente.';
@@ -76,14 +77,6 @@ function extractCleanErrorMessage(err: any): string {
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Candidate models in preference order (valid non-deprecated models according to gemini-api skill)
-const MODEL_CASCADE = [
-  'gemini-3.8-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-flash-latest',
-  'gemini-3.1-pro-preview',
-];
-
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -93,14 +86,29 @@ async function startServer() {
   app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
   const apiKey = process.env.GEMINI_API_KEY || '';
-  const ai = new GoogleGenAI({
+  const ai = apiKey ? new GoogleGenAI({
     apiKey,
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
       },
     },
-  });
+  }) : null;
+
+  const modelLimits = new Map<string, number>();
+  async function checkContext(model: string, contents: any, systemInstruction?: string) {
+    if (!modelLimits.has(model)) {
+      const metadata = await ai.models.get({ model });
+      modelLimits.set(model, metadata.inputTokenLimit || 1000000);
+    }
+    const count = await ai.models.countTokens({ model, contents, config: { systemInstruction } });
+    if (typeof count.totalTokens !== 'number') throw new Error('Não foi possível verificar o tamanho dos autos. Tente novamente.');
+    if (count.totalTokens > modelLimits.get(model)! - 32768) {
+      const error = new Error('Esta etapa excede o contexto do modelo. Divida a matéria ou os documentos; nenhum trecho foi cortado automaticamente.');
+      (error as any).status = 413;
+      throw error;
+    }
+  }
 
   // Health check endpoint
   app.get('/api/health', (req, res) => {
@@ -117,22 +125,20 @@ async function startServer() {
       }
 
       const { contents, systemInstruction, temperature, responseMimeType, model } = req.body;
-      const initialModel = model || 'gemini-3.8-flash';
+      const initialModel = model || process.env.GEMINI_MODEL;
 
       // Build model priority queue starting with requested model, followed by the rest of the cascade
-      const candidateModels = [
-        initialModel,
-        ...MODEL_CASCADE.filter(m => m !== initialModel)
-      ];
+      const models = candidateModels(initialModel, process.env.GEMINI_MODEL, process.env.GEMINI_FALLBACK_MODELS);
 
       let lastError: any = null;
       let responseText = '';
 
-      modelLoop: for (const candidateModel of candidateModels) {
+      modelLoop: for (const candidateModel of models) {
         // Retry each model up to 2 times on transient errors with backoff
         for (let attempt = 1; attempt <= 2; attempt++) {
           try {
             console.log(`[Gemini Generate] Requesting model: ${candidateModel} (attempt ${attempt})`);
+            await checkContext(candidateModel, contents, systemInstruction);
             const response = await ai.models.generateContent({
               model: candidateModel,
               contents,
@@ -140,14 +146,20 @@ async function startServer() {
                 systemInstruction,
                 temperature: temperature ?? 0.1,
                 responseMimeType,
+                maxOutputTokens: 32768,
               },
             });
+            assertCompleteResponse(response, true);
             responseText = response.text || '';
+            if (!responseText.trim()) throw new Error('A IA não retornou texto. A etapa não foi concluída.');
             lastError = null;
             break modelLoop; // Success!
           } catch (err: any) {
             lastError = err;
             console.warn(`[Gemini Generate] Model ${candidateModel} attempt ${attempt} failed:`, err?.message || err);
+            if (!isTransientError(err) && errorStatus(err) !== 404) {
+              return res.status(errorStatus(err)).json({ error: extractCleanErrorMessage(err) });
+            }
             if (isTransientError(err) && attempt < 2) {
               const backoff = 1000 * attempt + Math.floor(Math.random() * 500);
               console.log(`[Gemini Generate] Retrying ${candidateModel} in ${backoff}ms...`);
@@ -162,7 +174,7 @@ async function startServer() {
 
       if (lastError && !responseText) {
         const cleanMsg = extractCleanErrorMessage(lastError);
-        return res.status(503).json({ error: cleanMsg });
+        return res.status(errorStatus(lastError)).json({ error: cleanMsg });
       }
 
       res.json({ text: responseText });
@@ -183,29 +195,28 @@ async function startServer() {
       }
 
       const { contents, systemInstruction, temperature, model } = req.body;
-      const initialModel = model || 'gemini-3.8-flash';
+      const initialModel = model || process.env.GEMINI_MODEL;
 
       // Build model priority queue starting with requested model
-      const candidateModels = [
-        initialModel,
-        ...MODEL_CASCADE.filter(m => m !== initialModel)
-      ];
+      const models = candidateModels(initialModel, process.env.GEMINI_MODEL, process.env.GEMINI_FALLBACK_MODELS);
 
       let streamIterator: AsyncIterator<any> | null = null;
       let firstChunk: any = null;
       let lastError: any = null;
 
       // Find a working model and fetch the first chunk BEFORE sending SSE headers to the client
-      modelLoop: for (const candidateModel of candidateModels) {
+      modelLoop: for (const candidateModel of models) {
         for (let attempt = 1; attempt <= 2; attempt++) {
           try {
             console.log(`[Gemini Stream] Attempting model: ${candidateModel} (attempt ${attempt})`);
+            await checkContext(candidateModel, contents, systemInstruction);
             const streamResponse = await ai.models.generateContentStream({
               model: candidateModel,
               contents,
               config: {
                 systemInstruction,
                 temperature: temperature ?? 0.1,
+                maxOutputTokens: 32768,
               },
             });
 
@@ -221,6 +232,9 @@ async function startServer() {
           } catch (err: any) {
             lastError = err;
             console.warn(`[Gemini Stream] Model ${candidateModel} attempt ${attempt} failed:`, err?.message || err);
+            if (!isTransientError(err) && errorStatus(err) !== 404) {
+              return res.status(errorStatus(err)).json({ error: extractCleanErrorMessage(err) });
+            }
             if (isTransientError(err) && attempt < 2) {
               const backoff = 1000 * attempt + Math.floor(Math.random() * 500);
               console.log(`[Gemini Stream] Retrying ${candidateModel} in ${backoff}ms...`);
@@ -235,7 +249,7 @@ async function startServer() {
       // If all candidate models failed before stream started, return standard JSON error
       if (!streamIterator || !firstChunk) {
         const cleanMsg = extractCleanErrorMessage(lastError);
-        return res.status(503).json({ error: cleanMsg });
+        return res.status(errorStatus(lastError)).json({ error: cleanMsg });
       }
 
       // Headers are only sent now that we verified stream works!
@@ -244,8 +258,15 @@ async function startServer() {
       res.setHeader('Connection', 'keep-alive');
       res.flushHeaders?.();
 
+      let emittedText = false;
+      let lastFinishReason: string | undefined;
       // Emit the first chunk if present
+      if (!firstChunk.done) {
+        assertCompleteResponse(firstChunk.value);
+        lastFinishReason = firstChunk.value?.candidates?.[0]?.finishReason;
+      }
       if (!firstChunk.done && firstChunk.value?.text) {
+        emittedText = true;
         res.write(`data: ${JSON.stringify({ text: firstChunk.value.text })}\n\n`);
       }
 
@@ -254,12 +275,16 @@ async function startServer() {
         while (true) {
           const { done, value } = await streamIterator.next();
           if (done) break;
+          assertCompleteResponse(value);
+          lastFinishReason = value?.candidates?.[0]?.finishReason || lastFinishReason;
           if (value?.text) {
+            emittedText = true;
             res.write(`data: ${JSON.stringify({ text: value.text })}\n\n`);
           }
         }
       }
 
+      if (!emittedText || lastFinishReason !== 'STOP') throw new Error('A IA não concluiu a resposta. O texto parcial não foi salvo como concluído.');
       res.write('data: [DONE]\n\n');
       res.end();
     } catch (error: any) {
@@ -294,3 +319,4 @@ async function startServer() {
 }
 
 startServer();
+
