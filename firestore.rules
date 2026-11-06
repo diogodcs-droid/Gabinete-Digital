@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitive Definitions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Phase 4: Entity Validation helper
+    function isValidSentence(data) {
+      return data.keys().hasAll(['userId', 'generatedText', 'createdAt'])
+        && data.keys().size() <= 6 // userId, generatedText, createdAt, title, caseDetails, metadata
+        && data.userId is string
+        && data.userId == request.auth.uid
+        && data.generatedText is string
+        && data.generatedText.size() <= 1000000
+        && (data.createdAt is timestamp || data.createdAt == request.time)
+        && (!('title' in data) || (data.title is string && data.title.size() <= 500))
+        && (!('caseDetails' in data) || (data.caseDetails is string && data.caseDetails.size() <= 2000000))
+        && (!('metadata' in data) || (data.metadata is map));
+    }
+
+    match /sentences/{sentenceId} {
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      allow create: if isSignedIn() 
+        && isValidId(sentenceId)
+        && isValidSentence(incoming());
+        
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // Sentences are immutable for now, or we could allow updates to title
+      allow update: if isOwner(existing().userId)
+        && isValidSentence(incoming())
+        && incoming().userId == existing().userId
+        && incoming().createdAt == existing().createdAt;
+    }
+  }
+}

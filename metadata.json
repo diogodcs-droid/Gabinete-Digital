@@ -1,0 +1,8 @@
+{
+  "name": "Giliani Assistente - Versão 5.5 beta",
+  "description": "Assistente IA do Magistrado do Trabalho para analise de pecas e elaboracao de minutas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
