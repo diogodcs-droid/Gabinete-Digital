@@ -24,22 +24,20 @@ import { extractDeadlinesFromText, extractSectionsFromRawText, PrazoProcessual }
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import * as pdfjsLib from 'pdfjs-dist';
-import mammoth from 'mammoth';
+import { readDocument } from '@/lib/readDocuments';
+import { readGeminiStream } from '@/lib/geminiClient';
+import { extractCase, draftInChapters } from '@/lib/legalWorkflow';
 import { auth, db, signInWithGoogle, logout, handleFirestoreError, OperationType, isFirebaseConfigured } from '@/src/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, addDoc, query, where, orderBy, getDocs, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
-
-// Configure PDF.js worker using a more reliable CDN URL
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 // Rolling descriptive texts to show during intense judicial AI steps
 const LOADING_STEPS = [
   "Buscando as preliminares e alegações iniciais na petição...",
   "Vasculhando contestação e mapeando controvérsias fáticas...",
   "Aglutinando termos documentais e depoimentos de testemunhas...",
-  "Consultando acervo jurisprudencial do TRT4, TST, e precedentes vinculantes...",
+  "Conferindo as referências jurídicas fornecidas nos autos...",
   "Formatando cabeçalho estrutural em conformidade com o rito trabalhista...",
   "Redigindo os fundamentos jurídicos com base na distribuição do ônus...",
   "Alinhando dispositivo final e parâmetros de liquidação das custas..."
@@ -395,6 +393,8 @@ export default function App() {
 
   const [generatedDraft, setGeneratedDraft] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState('');
+  const [draftComplete, setDraftComplete] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<{role: 'user' | 'model', text: string}[]>([]);
@@ -1252,44 +1252,7 @@ export default function App() {
         throw new Error('Sem resposta de stream do servidor');
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let fullResponse = '';
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (trimmed.startsWith('data: ')) {
-            const dataStr = trimmed.slice(6);
-            if (dataStr === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(dataStr);
-              if (parsed.error) {
-                throw new Error(formatFriendlyErrorMessage(parsed.error));
-              }
-              if (parsed.text) {
-                fullResponse += parsed.text;
-                if (options.onStreamChunk) {
-                  options.onStreamChunk(fullResponse);
-                }
-              }
-            } catch (jsonErr: any) {
-              if (jsonErr.message && !jsonErr.message.includes('JSON')) {
-                throw jsonErr;
-              }
-            }
-          }
-        }
-      }
-
-      return fullResponse;
+      return readGeminiStream(response.body, options.onStreamChunk);
     } else {
       const response = await fetch('/api/gemini/generate', {
         method: 'POST',
@@ -1316,148 +1279,25 @@ export default function App() {
   };
 
   const handleSilentExtraction = async () => {
-    const hasFiles = uploadedFiles.length > 0;
-    const hasDetails = caseDetails.trim().length > 0;
-    if (!hasFiles && !hasDetails) return;
-
+    if (isAnalyzing || isGenerating) return;
+    const sources = uploadedFiles.length ? uploadedFiles : [{ name: 'Diretrizes / texto informado', text: caseDetails }];
+    if (!sources.some(f => f.text.trim())) return;
     setIsAnalyzing(true);
+    setAnalysis(null);
     setError(null);
     setExtractionError(null);
     try {
-      const fileChunks: { name: string; text: string }[] = [];
-      const MAX_SAFE_CHARS = 1000000; // Limit for a single piece to preserve context and speed
-
-      // Helper to split a string into paragraph-safe chunks
-      const splitTextIntoParagraphChunks = (text: string, maxChars: number): string[] => {
-        const paragraphs = text.split('\n');
-        const chunks: string[] = [];
-        let currentChunk = '';
-        for (const p of paragraphs) {
-          if ((currentChunk + '\n' + p).length > maxChars) {
-            if (currentChunk.trim()) chunks.push(currentChunk.trim());
-            currentChunk = p;
-          } else {
-            currentChunk = currentChunk ? currentChunk + '\n' + p : p;
-          }
-        }
-        if (currentChunk.trim()) chunks.push(currentChunk.trim());
-        return chunks;
-      };
-
-      if (hasFiles) {
-        // Create chunks that fit within safe limits from uploaded files
-        for (const file of uploadedFiles) {
-          if (file.text.length > MAX_SAFE_CHARS) {
-            const subChunks = splitTextIntoParagraphChunks(file.text, MAX_SAFE_CHARS);
-            subChunks.forEach((subText, idx) => {
-              fileChunks.push({
-                name: `${file.name} - Parte ${idx + 1}/${subChunks.length}`,
-                text: subText
-              });
-            });
-          } else {
-            fileChunks.push(file);
-          }
-        }
-      } else if (hasDetails) {
-        // Fallback to extracting from typed/pasted caseDetails
-        fileChunks.push({
-          name: 'Petição Inicial / Diretrizes dos Autos',
-          text: caseDetails
-        });
-      }
-
-      // If we only have 1 chunk, process it normally in one step
-      if (fileChunks.length === 1) {
-        const text = await getGeminiModelResponse({
-          contents: `REALIZE A EXTRAÇÃO ESTRUTURADA EXAUSTIVA E COMPLETA do processo a partir deste documento. Extraia minuciosamente todos os fatos, pedidos, defesas, provas com IDs e prazos:\n\n--- ARQUIVO: ${fileChunks[0].name} ---\n${fileChunks[0].text}`,
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: 0.1,
-          responseMimeType: "application/json"
-        });
-
-        if (!text) throw new Error("O modelo não retornou nenhuma resposta.");
-        const data = cleanAndParseJSON(text);
-        setAnalysis(data);
-        setActiveAnalysisTab('alegacoes');
-        setIsAnalyzing(false);
-        return;
-      }
-
-      // Large multi-part process: Process chunks individually and then merge
-      const partialResults: any[] = [];
-      const maxBatchChunks = 5; // Guard against infinite files
-      const limitChunks = fileChunks.slice(0, maxBatchChunks);
-
-      for (let i = 0; i < limitChunks.length; i++) {
-        const chunk = limitChunks[i];
-        try {
-          const text = await getGeminiModelResponse({
-            contents: `Abaixo está uma parte dos autos do processo. Extraia as informações estruturadas (JSON) que puder encontrar APENAS nesta parte (${i+1} de ${limitChunks.length}):\n\n--- ARQUIVO: ${chunk.name} ---\n${chunk.text}`,
-            systemInstruction: SYSTEM_INSTRUCTION,
-            temperature: 0.1,
-            responseMimeType: "application/json"
-          });
-
-          if (text) {
-            try {
-              const parsed = cleanAndParseJSON(text);
-              partialResults.push(parsed);
-            } catch (err) {
-              console.warn(`Failed to parse chunk ${i+1}:`, err);
-            }
-          }
-        } catch (chunkErr) {
-          console.warn(`Error extracting from chunk ${chunk.name}:`, chunkErr);
-        }
-      }
-
-      if (partialResults.length === 0) {
-        throw new Error("Não foi possível extrair dados de nenhum dos pedaços do documento.");
-      }
-
-      // Synthesize/Merge the intermediate steps into a coherent structure
-      const mergePrompts = `Abaixo estão representações parciais extraídas de diferentes partes de um processo trabalhista por meio de processamento particionado. Combine-as e ofereça um JSON único e consolidado de forma técnica, imparcial, e totalmente integrada, cobrindo tudo sem duplicidade:\n\n${JSON.stringify(partialResults, null, 2)}`;
-
-      const mergedText = await getGeminiModelResponse({
-        contents: mergedResponsePromptHelper(mergePrompts),
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.1,
-        responseMimeType: "application/json"
-      });
-
-      if (!mergedText) throw new Error("O modelo não retornou resposta na fusão.");
-      const integratedData = cleanAndParseJSON(mergedText);
-      setAnalysis(integratedData);
+      const data = await extractCase(sources, getGeminiModelResponse, cleanAndParseJSON, setProcessingStatus);
+      setAnalysis(data);
       setActiveAnalysisTab('alegacoes');
-
     } catch (err: any) {
-      console.error('Error during silent extraction:', err);
-      const errMsg = formatFriendlyErrorMessage(err);
-      setExtractionError(errMsg);
-      setError('Falha ao extrair dados estruturados de forma particionada: ' + errMsg);
-      setTimeout(() => {
-        setExtractionError(null);
-      }, 7000);
+      const message = formatFriendlyErrorMessage(err);
+      setExtractionError(message);
+      setError('Análise não concluída: ' + message);
     } finally {
       setIsAnalyzing(false);
+      setProcessingStatus('');
     }
-  };
-
-  const mergedResponsePromptHelper = (prompt: string): string => {
-    return `${prompt}\n\nGere um JSON unificado de saída com os campos exatos do manual:\n` +
-      `- numero_processo: string\n` +
-      `- reclamante: string\n` +
-      `- reclamada: string\n` +
-      `- vt: string\n` +
-      `- materia_principal: string\n` +
-      `- alegacoes_inicial: string\n` +
-      `- pedidos_inicial: string\n` +
-      `- alegacoes_contestacao: string\n` +
-      `- pedidos_contestacao: string\n` +
-      `- provas_produzidas: string\n` +
-      `- jurisprudencia: { trt4: string, tst: string, stf: string }\n` +
-      `- prazos_processuais: Array<{ data: string, descricao: string, tipo: 'audiencia' | 'prazo' | 'prescricao' | 'distribuicao' | 'pericia' | 'outro', status: 'urgente' | 'alerta' | 'cumprido' | 'informativo' }>`;
   };
 
   useEffect(() => {
@@ -1470,39 +1310,7 @@ export default function App() {
   }, [generatedDraft, chatHistory]);
 
   const extractTextFromFile = async (file: File): Promise<string> => {
-    try {
-      if (file.type === 'application/pdf') {
-        const arrayBuffer = await file.arrayBuffer();
-        console.log(`Extracting PDF: ${file.name} (${file.size} bytes)`);
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        const pdf = await loadingTask.promise;
-        let fullText = "";
-
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          const pageText = textContent.items
-            .map((item: any) => item.str)
-            .join(" ");
-          fullText += pageText + "\n";
-        }
-        return fullText.replace(/\s\s+/g, ' ').trim();
-      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        const arrayBuffer = await file.arrayBuffer();
-        console.log(`Extracting DOCX: ${file.name}`);
-        const result = await mammoth.extractRawText({ arrayBuffer });
-        return result.value.replace(/\s\s+/g, ' ').trim();
-      } else if (file.type === 'text/plain') {
-        console.log(`Reading Text file: ${file.name}`);
-        const text = await file.text();
-        return text.replace(/\s\s+/g, ' ').trim();
-      } else {
-        throw new Error(`Formato de arquivo "${file.name}" não suportado. Use PDF, DOCX ou TXT.`);
-      }
-    } catch (err: any) {
-      console.error(`Error processing file ${file.name}:`, err);
-      throw err;
-    }
+    return readDocument(file, getGeminiModelResponse, setProcessingStatus);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1525,11 +1333,15 @@ export default function App() {
         newFiles.push({ name: file.name, text, size: formattedSize });
       }
       setUploadedFiles(prev => [...prev, ...newFiles]);
+      setAnalysis(null);
+      setChatHistory([]);
+      setGeneratedDraft('');
     } catch (err: any) {
       console.error('Error extracting text:', err);
-      setError('Erro ao processar PDF: ' + (err.message || 'Verifique se o arquivo está corrompido.'));
+      setError('Erro ao ler documentos: ' + (err.message || 'Verifique se o arquivo está corrompido.'));
     } finally {
       setIsExtracting(false);
+      setProcessingStatus('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -1547,6 +1359,7 @@ export default function App() {
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
+    if (isGenerating || isAnalyzing || isExtracting) return;
     const files = e.dataTransfer.files;
     if (!files || files.length === 0) return;
 
@@ -1565,92 +1378,37 @@ export default function App() {
         newFiles.push({ name: file.name, text, size: formattedSize });
       }
       setUploadedFiles(prev => [...prev, ...newFiles]);
+      setAnalysis(null);
+      setChatHistory([]);
+      setGeneratedDraft('');
     } catch (err: any) {
       console.error('Error pulling drops:', err);
       setError('Erro ao processar arquivo solto: ' + (err.message || 'Tente novamente.'));
     } finally {
       setIsExtracting(false);
+      setProcessingStatus('');
     }
   };
 
   const removeFile = (index: number) => {
+    if (isGenerating || isAnalyzing || isExtracting) return;
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
     setExtractionError(null);
-    if (uploadedFiles.length === 1) {
-      setAnalysis(null);
-    }
+    setAnalysis(null);
+    setChatHistory([]);
+    setGeneratedDraft('');
   };
 
   const handleGenerate = async (type: 'standard' | 'ed' = 'standard') => {
     if (!caseDetails.trim() && uploadedFiles.length === 0) return;
 
-    // Automatically trigger analysis if not already done
-    if (uploadedFiles.length > 0 && !analysis && !isAnalyzing) {
-      handleSilentExtraction();
-    }
-
+    if (isGenerating || isAnalyzing || isExtracting) return;
     setIsGenerating(true);
     setError(null);
     setGeneratedDraft('');
-    
-    let userMessage = caseDetails || 'Gere a minuta com base nos arquivos enviados.';
-    
-    if (uploadedFiles.length > 0) {
-      const MAX_TOTAL_CHARS = 2000000;
-      let totalTextLength = uploadedFiles.reduce((acc, f) => acc + f.text.length, 0);
-
-      if (totalTextLength > MAX_TOTAL_CHARS) {
-        try {
-          const summaries: string[] = [];
-          
-          for (const file of uploadedFiles) {
-            const fileLength = file.text.length;
-            if (fileLength > 1000000) {
-              const numParts = Math.ceil(fileLength / 1000000);
-              for (let partIdx = 0; partIdx < numParts; partIdx++) {
-                const start = partIdx * 1000000;
-                const end = start + 1000000;
-                const subStr = file.text.substring(start, end);
-                const sumText = await getGeminiModelResponse({
-                  contents: `Resuma detalhadamente todos os fatos, alegações, depoimentos, leis citadas e as provas desta ementa de autos processuais (Parte ${partIdx+1} de ${numParts} do arquivo ${file.name}):\n\n${subStr}`,
-                  systemInstruction: "Você é um assistente judiciário altamente qualificado. Crie resumos e relatórios de evidências técnicos e minuciosos, sem omitir IDs e páginas das provas nem nomes de testemunhas.",
-                  temperature: 0.1,
-                });
-                if (sumText) summaries.push(`--- RESUMO AUTOS PARTICIONADOS [${file.name} Parte ${partIdx+1}]: ---\n${sumText}`);
-              }
-            } else {
-              const sumText = await getGeminiModelResponse({
-                contents: `Resuma detalhadamente todos os fatos, alegações, depoimentos, leis citadas e as provas do arquivo ${file.name}:\n\n${file.text}`,
-                systemInstruction: "Você é um assistente judiciário altamente qualificado. Crie resumos e relatórios de evidências técnicos e minuciosos, sem omitir IDs e páginas das provas nem nomes de testemunhas.",
-                temperature: 0.1,
-              });
-              if (sumText) summaries.push(`--- RESUMO AUTOS PARTICIONADOS [${file.name}]: ---\n${sumText}`);
-            }
-          }
-
-          userMessage = `${userMessage}\n\nAUTOS PROCESSUAIS COMPACTADOS RELEVANTES (GERADOS AUTOMATICAMENTE POR PARTICIONAMENTO):\n\n${summaries.join('\n\n')}`;
-        } catch (sumErr: any) {
-          console.error("Error building auto-partition sum for draft generator:", sumErr);
-          userMessage = `${userMessage}\n\n[FALLBACK TRUNCADO DEVIDO A LIMITE DE PROCESSAMENTO]\n\n` + uploadedFiles.map(f => `--- CONTEÚDO DO ARQUIVO: ${f.name} ---\n${f.text.substring(0, 1000000)}`).join('\n\n');
-        }
-      } else {
-        const fileDataString = uploadedFiles.map(f => `--- CONTEÚDO DO ARQUIVO: ${f.name} ---\n${f.text}`).join('\n\n');
-        userMessage = `${userMessage}\n\n${fileDataString}`;
-      }
-    }
-
-    const currentChatHistory: { role: 'user' | 'model'; text: string }[] = [
-      ...chatHistory,
-      { role: 'user', text: userMessage }
-    ];
-    setChatHistory(currentChatHistory);
-
+    setDraftComplete(false);
+    setProcessingStatus('Preparando leitura integral dos autos');
     try {
-      const contents = currentChatHistory.map(m => ({
-        role: m.role,
-        parts: [{ text: m.text }]
-      }));
-
       let systemInstruction = type === 'ed' ? SYSTEM_INSTRUCTION_ED : SYSTEM_INSTRUCTION;
       systemInstruction += `\n\nATENÇÃO IMPERATIVA - VEDAÇÃO ABSOLUTA A MINUTA SINTÉTICA (DEVER DE PROFUNDIDADE E ROBUSTEZ):
 Esta sentença NÃO PODE ser sintética, telegráfica ou resumida. É DEVER FUNCIONAL indeclinável do magistrado proferir decisão exaustiva, com profunda valoração de cada elemento de prova constante dos autos (art. 93, IX, da CF e art. 489, § 1º, do CPC).
@@ -1691,18 +1449,19 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
 "Condeno a reclamada ao pagamento de honorários advocatícios no importe de 10% sobre o valor da condenação que resultar da liquidação do julgado, nos termos da Súmula nº 37 do TRT4 (com redação dada pela Resolução Administrativa nº 30/2023), forte no art. 791-A, da CLT."`;
       }
 
-      const fullResponse = await getGeminiModelResponse({
-        contents,
+      const fullResponse = await draftInChapters({
+        files: uploadedFiles.length ? uploadedFiles : [{ name: 'Texto informado pelo usuário', text: caseDetails }],
+        instructions: caseDetails || 'Gere a minuta com base nos arquivos enviados.',
         systemInstruction,
-        temperature: 0.1,
-        isStream: true,
-        onStreamChunk: (text) => {
-          setGeneratedDraft(text);
-        }
+        generate: getGeminiModelResponse,
+        parse: cleanAndParseJSON,
+        progress: setProcessingStatus,
+        onDraft: setGeneratedDraft,
       });
-      
-      setChatHistory(prev => [...prev, { role: 'model', text: fullResponse }]);
-      
+      setGeneratedDraft(fullResponse);
+      setDraftComplete(true);
+      setChatHistory([{ role: 'user', text: caseDetails }, { role: 'model', text: fullResponse }]);
+
       saveSentence(fullResponse, type);
 
     } catch (err: any) {
@@ -1710,6 +1469,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
       setError('Falha ao gerar minuta: ' + formatFriendlyErrorMessage(err));
     } finally {
       setIsGenerating(false);
+      setProcessingStatus('');
     }
   };
 
@@ -1801,6 +1561,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
   return (
     <div className="flex flex-col h-screen w-full bg-[#f4f6f9] font-sans text-slate-800 overflow-hidden selection:bg-amber-100 selection:text-amber-900">
       
+      {isExtracting && <div role="status" className="bg-amber-50 text-amber-900 px-6 py-2 text-sm">{processingStatus || 'Lendo documentos...'}</div>}
       {/* Premium Legal Header */}
       <header className="h-20 bg-slate-900 text-white border-b border-slate-950 flex items-center justify-between px-8 shrink-0 shadow-md relative z-10">
         <div className="flex items-center gap-6">
@@ -1972,7 +1733,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                     Anexar
                   </Button>
                 </div>
-                <input type="file" accept=".pdf,.docx,.txt" multiple className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+                <input type="file" accept=".pdf,.docx,.txt" multiple disabled={isGenerating || isAnalyzing || isExtracting} className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
               </CardHeader>
               <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
                 <Tabs value={activeAnalysisTab} onValueChange={setActiveAnalysisTab} className="flex-1 flex flex-col overflow-hidden">
@@ -2188,7 +1949,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                             exit={{ opacity: 0, y: -5 }}
                             className="text-xs text-slate-500 font-medium italic mt-2.5 max-w-xs"
                           >
-                            {LOADING_STEPS[loadingPhraseIndex]}
+                            {processingStatus || LOADING_STEPS[loadingPhraseIndex]}
                           </motion.p>
                         </AnimatePresence>
                       </div>
@@ -2240,7 +2001,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                                 variant="ghost"
                                 className="h-6 px-2 text-[9.5px] uppercase font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded"
                                 onClick={handleSilentExtraction}
-                                disabled={isAnalyzing}
+                                disabled={isAnalyzing || isGenerating || isExtracting}
                               >
                                 {isAnalyzing ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : "Extrair com IA"}
                               </Button>
@@ -2282,7 +2043,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                                 variant="ghost"
                                 className="h-6 px-2 text-[9.5px] uppercase font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded"
                                 onClick={handleSilentExtraction}
-                                disabled={isAnalyzing}
+                                disabled={isAnalyzing || isGenerating || isExtracting}
                               >
                                 {isAnalyzing ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : "Extrair com IA"}
                               </Button>
@@ -2324,7 +2085,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                                 variant="ghost"
                                 className="h-6 px-2 text-[9.5px] uppercase font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded"
                                 onClick={handleSilentExtraction}
-                                disabled={isAnalyzing}
+                                disabled={isAnalyzing || isGenerating || isExtracting}
                               >
                                 {isAnalyzing ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : "Extrair com IA"}
                               </Button>
@@ -2386,7 +2147,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                                 variant="ghost"
                                 className="h-6 px-2 text-[9.5px] uppercase font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded"
                                 onClick={handleSilentExtraction}
-                                disabled={isAnalyzing}
+                                disabled={isAnalyzing || isGenerating || isExtracting}
                               >
                                 {isAnalyzing ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : "Extrair com IA"}
                               </Button>
@@ -2616,7 +2377,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
               <Button 
                 className="h-9 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-lg text-xs font-bold shadow-lg shadow-amber-500/10 hover:shadow-amber-500/20 active:scale-95 transition-all gap-1.5" 
                 onClick={() => handleGenerate('standard')} 
-                disabled={isGenerating || (!caseDetails.trim() && uploadedFiles.length === 0)}
+                disabled={isGenerating || isAnalyzing || isExtracting || (!caseDetails.trim() && uploadedFiles.length === 0)}
               >
                 {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-slate-950" />}
                 MINUTAR SENTENÇA
@@ -2624,7 +2385,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
               <Button 
                 className="h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-amber-600/10 hover:shadow-amber-600/20 active:scale-95 transition-all gap-1.5" 
                 onClick={() => handleGenerate('ed')} 
-                disabled={isGenerating || (!caseDetails.trim() && uploadedFiles.length === 0)}
+                disabled={isGenerating || isAnalyzing || isExtracting || (!caseDetails.trim() && uploadedFiles.length === 0)}
               >
                 {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileText className="w-3.5 h-3.5 text-white" />}
                 MINUTAR SENTENÇA DE ED
@@ -2901,7 +2662,8 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
                   <div className="bg-slate-900 px-8 py-6 shadow-2xl border border-slate-800 flex flex-col items-center gap-4 text-amber-500 rounded-2xl max-w-sm text-center">
                     <Loader2 className="w-10 h-10 animate-spin text-amber-500" />
                     <div>
-                      <h4 className="font-extrabold text-sm tracking-widest uppercase text-slate-100">REDIGINDO</h4>
+                      <h4 className="font-extrabold text-sm tracking-widest uppercase text-slate-100">PREPARANDO MINUTA</h4>
+                      <p className="mt-2 text-xs text-slate-300" role="status">{processingStatus}</p>
                     </div>
                   </div>
                 </div>
@@ -2909,7 +2671,7 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
             </CardContent>
 
             {/* Success signature footer */}
-            {generatedDraft && !isGenerating && (
+            {generatedDraft && !isGenerating && draftComplete && (
               <footer className="h-11 bg-slate-950 border-t border-slate-800/80 flex items-center justify-between px-6 shrink-0 z-10 select-none shadow">
                 <div className="flex items-center gap-4 text-xs font-semibold text-slate-400">
                   <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Minuta Lavrada Com Sucesso</span>
@@ -3325,3 +3087,4 @@ Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivame
     </div>
   );
 }
+
