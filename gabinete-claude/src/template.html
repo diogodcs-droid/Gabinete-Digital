@@ -1,0 +1,140 @@
+<title>Gabinete Claude</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap">
+<style>
+/*CSS*/
+</style>
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">Gabinete Digital<small>Assistente de minutas trabalhistas</small></h1>
+    <span id="claudeStatus" class="status">Conectando ao Claude...</span>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <section class="card" aria-labelledby="h-autos">
+        <h2 class="t" id="h-autos">1. Autos do processo</h2>
+        <div class="drop" id="drop">
+          <p>Arraste PDF, DOCX ou TXT aqui, ou escolha os arquivos.</p>
+          <input type="file" id="fileInput" accept=".pdf,.docx,.txt,application/pdf" multiple hidden>
+          <button class="btn sec" type="button" onclick="document.getElementById('fileInput').click()">Escolher arquivos</button>
+          <button class="btn ghost" type="button" id="pasteToggle" aria-expanded="false">Colar texto</button>
+        </div>
+        <div id="pasteBox" hidden style="margin-top:10px">
+          <textarea id="pasteText" placeholder="Cole aqui o texto dos autos (petição inicial, contestação, atas, laudos...)" aria-label="Texto dos autos"></textarea>
+          <div class="actions"><button class="btn sec" type="button" id="pasteAdd">Adicionar aos autos</button></div>
+        </div>
+        <ul class="files" id="fileList"></ul>
+        <p class="small muted" id="autosInfo" style="margin-top:8px"></p>
+        <p class="small muted">O texto é lido neste navegador. PDFs digitalizados (imagem) não têm texto e não são lidos: não há OCR.</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-dir">
+        <h2 class="t" id="h-dir">2. Diretrizes do magistrado</h2>
+        <textarea id="diretrizes" placeholder="Escreva como o juízo decidiu: pedidos procedentes e improcedentes, fundamentos, valores, provas valoradas, ordens específicas..." aria-label="Diretrizes do magistrado"></textarea>
+        <p class="small muted"><span id="saveState"></span></p>
+        <fieldset>
+          <legend>Tipo de peça</legend>
+          <div class="opts">
+            <label><input type="radio" name="tipo" value="standard" checked> Sentença</label>
+            <label><input type="radio" name="tipo" value="ed"> Sentença de embargos de declaração</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Opções (também detectadas pelas palavras das diretrizes)</legend>
+          <div class="opts">
+            <label><input type="checkbox" id="fSum"> Rito sumaríssimo</label>
+            <label><input type="checkbox" id="fRev"> Revelia da reclamada</label>
+            <label><input type="checkbox" id="fProc"> Procedência total dos pedidos</label>
+            <label><input type="checkbox" id="fImproc"> Improcedência total dos pedidos</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="rigor">Rigor da redação</label>
+          <select id="rigor">
+            <option value="complex">Máximo (mais lento, melhor para casos complexos)</option>
+            <option value="default">Equilibrado</option>
+          </select>
+        </div>
+        <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="optExtract" checked style="margin-top:3px"> Refazer a extração antes de redigir se os autos ou as diretrizes mudaram (recomendado)</label>
+        <div class="actions">
+        </div>
+      </section>
+    </aside>
+
+    <main>
+      <div class="progress" id="progress" hidden role="status" aria-live="polite">
+        <span class="txt" id="progText"></span>
+        <button class="btn ghost" id="btnStop" type="button">Parar</button>
+        <div class="bar indet"><i id="progBar"></i></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="tabbar">
+        <div class="tabs" role="tablist" aria-label="Seções">
+          <button class="tab" role="tab" data-tab="inicial" aria-selected="true">Inicial</button>
+          <button class="tab" role="tab" data-tab="pedidos" aria-selected="false">Pedidos</button>
+          <button class="tab" role="tab" data-tab="defesa" aria-selected="false">Defesa</button>
+          <button class="tab" role="tab" data-tab="provas" aria-selected="false">Provas</button>
+          <button class="tab" role="tab" data-tab="hist" aria-selected="false">Histórico</button>
+          <button class="tab" role="tab" data-tab="minuta" aria-selected="false">Minuta</button>
+        </div>
+          <button class="btn" id="btnGenerate" type="button" disabled>Gerar minuta</button>
+          <button class="btn" id="btnOpenParecer" type="button">Analisar minuta</button>
+        </div>
+
+        <section class="panel" id="tab-inicial" role="tabpanel"><div id="inicialBody"></div></section>
+        <section class="panel" id="tab-pedidos" role="tabpanel" hidden><div id="pedidosBody"></div></section>
+        <section class="panel" id="tab-defesa" role="tabpanel" hidden><div id="defesaBody"></div></section>
+        <section class="panel" id="tab-provas" role="tabpanel" hidden><div id="provasBody"></div></section>
+
+        <section class="panel" id="tab-minuta" role="tabpanel" hidden>
+          <div id="minutaEmpty" class="empty"><h3>Nenhuma minuta gerada</h3><p>Envie os autos, escreva as diretrizes e clique em "Gerar minuta".</p></div>
+          <div id="minutaWrap" hidden>
+            <div class="toolbar">
+              <strong id="minutaMeta"></strong><span class="grow"></span>
+              <button class="btn ghost" id="btnEdit" type="button">Editar texto</button>
+              <button class="btn ghost" id="btnCopy" type="button">Copiar</button>
+              <button class="btn" id="btnDocx" type="button">Baixar .docx</button>
+            </div>
+            <div class="notice warn" id="truncNotice" hidden>A minuta parece interrompida (não termina em "Nada mais."). <button class="link-btn" id="btnContinue" type="button">Continuar de onde parou</button></div>
+            <div class="paper-wrap">
+              <article class="paper" id="paper"></article>
+              <textarea class="editor" id="editor" hidden aria-label="Editor da minuta"></textarea>
+            </div>
+            <div class="field">
+              <label for="refineText">Ajustar a minuta</label>
+              <textarea id="refineText" style="min-height:90px" placeholder="Ex.: julgar improcedente o pedido de horas extras e reforçar a fundamentação com o depoimento da testemunha."></textarea>
+              <div class="actions"><button class="btn" id="btnRefine" type="button">Reescrever com este ajuste</button></div>
+            </div>
+            <h3 class="h-sec">Conferência automática <span class="count" id="confCount"></span></h3>
+            <div id="confBody"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="tab-parecer" role="tabpanel" hidden>
+          <p class="muted">Cole ou importe uma minuta (sua ou de terceiros) para receber um parecer de análise: fidelidade aos autos, coerência, lacunas e pontos de atenção. Os autos carregados ao lado são usados na conferência.</p>
+          <div class="toolbar">
+            <label class="btn sec" style="cursor:pointer">Importar minuta<input type="file" id="minutaFile" accept=".pdf,.docx,.txt" hidden></label>
+            <button class="btn ghost" id="btnUseDraft" type="button">Usar a minuta gerada</button>
+          </div>
+          <textarea id="minutaIn" style="min-height:220px" placeholder="Texto da minuta a analisar" aria-label="Minuta a analisar"></textarea>
+          <div class="actions"><button class="btn" id="btnParecer" type="button" disabled>Analisar minuta</button></div>
+          <div id="parecerOut" style="margin-top:14px"></div>
+        </section>
+
+        <section class="panel" id="tab-hist" role="tabpanel" hidden><div id="histBody"></div></section>
+      </div>
+    </main>
+  </div>
+
+  <p class="disclaimer">A minuta é um rascunho de apoio. O Claude não consulta bases oficiais: confira jurisprudência, súmulas e artigos citados, além de datas e valores, antes de assinar. Documentos e histórico ficam neste navegador; o texto enviado para redação é processado pelo Claude na sua conta.</p>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/*JS*/
+</script>

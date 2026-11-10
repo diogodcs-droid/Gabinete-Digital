@@ -1,0 +1,2424 @@
+<title>Gabinete Claude</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#f6f4ef; --surface:#fffdf9; --surface2:#efece4; --fg:#1f2430; --muted:#5f6573; --line:#d9d4c8;
+  --accent:#7a1f2b; --accent-fg:#fff; --accent-soft:#f3e3e5;
+  --ok:#1f6b3a; --ok-bg:#e1f1e6; --warn:#8a5a00; --warn-bg:#faedcf; --err:#a3201f; --err-bg:#f9dedd; --info:#1f4f7a; --info-bg:#e0ecf7;
+  --paper:#ffffff; --paper-fg:#14161c;
+  --serif:"Source Serif 4","Times New Roman",Georgia,serif; --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14161b; --surface:#1c1f26; --surface2:#242832; --fg:#e8e6df; --muted:#9aa0ad; --line:#363b47;
+  --accent:#e3919b; --accent-fg:#1a0d10; --accent-soft:#3a2328;
+  --ok:#7fd49b; --ok-bg:#1d3326; --warn:#f0c46a; --warn-bg:#3a2f14; --err:#f19a98; --err-bg:#3d1f1f; --info:#8fbfea; --info-bg:#1c2f42;
+  --paper:#f4f1ea; --paper-fg:#14161c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14161b; --surface:#1c1f26; --surface2:#242832; --fg:#e8e6df; --muted:#9aa0ad; --line:#363b47;
+  --accent:#e3919b; --accent-fg:#1a0d10; --accent-soft:#3a2328;
+  --ok:#7fd49b; --ok-bg:#1d3326; --warn:#f0c46a; --warn-bg:#3a2f14; --err:#f19a98; --err-bg:#3d1f1f; --info:#8fbfea; --info-bg:#1c2f42;
+  --paper:#f4f1ea; --paper-fg:#14161c; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--sans);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1180px;margin:0 auto}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:20px 0 14px;border-bottom:1px solid var(--line)}
+h1.brand{font:600 22px/1.2 var(--serif);margin:0;letter-spacing:.01em;text-wrap:balance}
+.brand small{display:block;font:500 12px var(--sans);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:2px}
+.status{font-size:12px;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.status.on{color:var(--ok);background:var(--ok-bg);border-color:transparent}
+.status.off{color:var(--warn);background:var(--warn-bg);border-color:transparent}
+.layout{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;margin-top:18px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card+.card{margin-top:14px}
+h2.t{font:600 13px var(--sans);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 10px}
+h3{font:600 17px var(--serif);margin:0 0 6px}
+h4{font:600 14px var(--sans);margin:14px 0 4px}
+.h-sec{margin-top:22px}
+p{margin:0 0 8px}
+.muted{color:var(--muted)} .small{font-size:12.5px}
+label{font-size:14px}
+textarea,select,input[type=text]{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+textarea{min-height:140px;resize:vertical;line-height:1.5}
+textarea:focus,select:focus,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{font:600 14px var(--sans);border:1px solid var(--accent);background:var(--accent);color:var(--accent-fg);border-radius:8px;padding:9px 14px;cursor:pointer;min-height:40px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sec{background:var(--surface2);color:var(--fg);border-color:var(--line)}
+.icon-btn,.link-btn{background:none;border:0;color:var(--accent);font:inherit;font-size:13px;cursor:pointer;padding:2px 4px;text-decoration:underline}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:18px 12px;text-align:center;background:var(--bg)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0 0 8px;color:var(--muted);font-size:13.5px}
+.files{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}
+.file{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13.5px;background:var(--bg);min-width:0}
+.file-row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.file-name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.file-warn{color:var(--warn);font-size:12.5px;margin-top:4px}
+.opts{display:grid;gap:6px;margin:10px 0}
+.opts label{display:flex;gap:8px;align-items:flex-start}
+.opts input{margin-top:3px}
+fieldset{border:0;padding:0;margin:10px 0}
+legend{font-size:13px;color:var(--muted);padding:0;margin-bottom:4px}
+.field{margin:12px 0}
+.field>label{display:block;font-weight:600;margin-bottom:4px}
+
+.tabs{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tab{background:none;border:0;border-bottom:2px solid transparent;font:600 14px var(--sans);color:var(--muted);padding:10px 12px;cursor:pointer;white-space:nowrap;display:flex;gap:6px;align-items:center}
+.tab[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent)}
+.count{font-size:11px;min-width:18px;text-align:center;border-radius:99px;padding:0 6px}
+.count:empty{display:none}
+.count.c-err{background:var(--err-bg);color:var(--err)} .count.c-warn{background:var(--warn-bg);color:var(--warn)}
+.progress{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin:12px 0 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.progress .txt{flex:1 1 220px;font-size:13.5px;min-width:0}
+.bar{flex:1 1 100%;height:5px;background:var(--surface2);border-radius:9px;overflow:hidden;position:relative}
+.bar>i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+.bar.indet>i{width:30%!important;position:absolute;animation:mv 1.3s infinite ease-in-out}
+@keyframes mv{0%{left:-30%}100%{left:100%}}
+@media (prefers-reduced-motion:reduce){.bar.indet>i{animation:none;width:100%!important;opacity:.5}}
+
+.empty{padding:28px 8px;text-align:center;color:var(--muted)}
+.empty h3{color:var(--fg)}
+.empty p{max-width:52ch;margin:0 auto}
+.notice{border-radius:8px;padding:9px 12px;font-size:13.5px;margin-bottom:10px}
+.notice.warn{background:var(--warn-bg);color:var(--warn)} .notice.info{background:var(--info-bg);color:var(--info)} .notice.err{background:var(--err-bg);color:var(--err)}
+.kvs{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 24px;margin:0 0 14px}
+.kv{display:flex;flex-direction:column;padding:7px 0;border-bottom:1px solid var(--line);min-width:0}
+.kv dt{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.kv dd{margin:2px 0 0;overflow-wrap:anywhere}
+.chip{font-size:11px;border-radius:99px;padding:1px 8px;margin-left:4px;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)} .chip.warn{background:var(--warn-bg);color:var(--warn)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.seg-btn{border:1px solid var(--line);background:var(--bg);color:var(--fg);font:500 13px var(--sans);border-radius:99px;padding:5px 12px;cursor:pointer}
+.seg-btn[aria-selected=true],.seg-btn[aria-pressed=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.rich{overflow-wrap:anywhere;line-height:1.6}
+.rich ul,.rich ol{padding-left:22px;margin:0 0 10px}
+.rich p{margin:0 0 9px}
+.dl{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.dl-item{border:1px solid var(--line);border-radius:8px;padding:9px 12px;background:var(--bg)}
+.dl-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dl-date{font:700 14px var(--sans);font-variant-numeric:tabular-nums;border-left:4px solid var(--muted);padding-left:8px}
+.k-aud{border-color:var(--accent)} .k-prz{border-color:var(--warn)} .k-pre{border-color:var(--err)} .k-dis{border-color:var(--info)} .k-per{border-color:var(--ok)}
+.tag{font-size:11.5px;background:var(--surface2);border-radius:5px;padding:1px 7px;color:var(--muted)}
+.tag.urg{background:var(--err-bg);color:var(--err)}
+.dl-top .link-btn{margin-left:auto}
+.dl-desc{margin:6px 0 2px;overflow-wrap:anywhere} .dl-ctx{margin:0;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+
+.sum{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.sum-i{font-weight:600;font-size:13px;border-radius:99px;padding:3px 11px}
+.n-err.sum-i{background:var(--err-bg);color:var(--err)} .n-warn.sum-i{background:var(--warn-bg);color:var(--warn)} .n-ok.sum-i{background:var(--ok-bg);color:var(--ok)}
+.chks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.chk{display:flex;gap:10px;border-radius:8px;padding:8px 10px;border-left:4px solid}
+.chk p{margin:2px 0 0;font-size:13.5px;overflow-wrap:anywhere}
+.chk>div{min-width:0}
+.chk.n-err{background:var(--err-bg);border-color:var(--err)} .chk.n-warn{background:var(--warn-bg);border-color:var(--warn)} .chk.n-ok{background:var(--ok-bg);border-color:var(--ok)}
+.chk-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;min-width:62px;padding-top:2px}
+.n-err .chk-tag{color:var(--err)} .n-warn .chk-tag{color:var(--warn)} .n-ok .chk-tag{color:var(--ok)}
+.tbl-wrap{overflow-x:auto}
+.tbl{border-collapse:collapse;width:100%;font-size:13.5px}
+.tbl th,.tbl td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tbl th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.tbl .num{text-align:right}
+.det{margin-bottom:12px} .det summary{cursor:pointer;font-weight:600;margin-bottom:8px}
+
+.paper-wrap{background:var(--surface2);border-radius:10px;padding:16px;overflow-x:auto}
+.paper{background:var(--paper);color:var(--paper-fg);font:16px/1.75 var(--serif);max-width:820px;margin:0 auto;padding:36px max(20px,5vw);border-radius:2px;box-shadow:0 1px 6px rgba(0,0,0,.18);text-align:justify;overflow-wrap:anywhere;min-height:200px}
+.paper p{margin:0 0 .9em;text-indent:2.2em}
+.paper .p-cab,.paper .p-item{text-indent:0}
+.paper .p-item{padding-left:1.4em}
+.paper .p-sent{font:700 17px var(--serif);text-align:center;margin:0 0 1em;letter-spacing:.06em}
+.paper .p-tit{font:700 16px var(--serif);margin:1.2em 0 .5em;text-align:left}
+.paper .p-alerta{background:#ffe08a;color:#3a2a00;padding:0 3px}
+.paper .muted{color:#5f6573}
+.editor{font:15px/1.6 var(--serif);min-height:480px;max-width:820px;margin:0 auto;display:block}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.toolbar .grow{flex:1;color:var(--muted);font-size:13px}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.hist-item{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--bg)}
+.hist-item>div:first-child{min-width:0;display:flex;flex-direction:column}
+.toast{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;z-index:50;background:var(--fg);color:var(--bg);padding:11px 14px;border-radius:10px;font-size:14px;box-shadow:0 4px 18px rgba(0,0,0,.3)}
+.toast.err{background:var(--err);color:#fff} .toast.ok{background:var(--ok);color:#fff} .toast.warn{background:var(--warn);color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .toast.err,:root:not([data-theme="light"]) .toast.ok,:root:not([data-theme="light"]) .toast.warn{color:#111}}
+.disclaimer{font-size:12.5px;color:var(--muted);margin-top:22px;border-top:1px solid var(--line);padding-top:12px}
+:root[data-theme="dark"] .toast.err,:root[data-theme="dark"] .toast.ok,:root[data-theme="dark"] .toast.warn{color:#111}
+
+.tabbar{flex-wrap:wrap;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--line);margin-bottom:14px}.tabbar .tabs{border-bottom:0;margin-bottom:0;min-width:0}.tabbar .btn{flex:none;margin-left:4px}
+
+</style>
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">Gabinete Digital<small>Assistente de minutas trabalhistas</small></h1>
+    <span id="claudeStatus" class="status">Conectando ao Claude...</span>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <section class="card" aria-labelledby="h-autos">
+        <h2 class="t" id="h-autos">1. Autos do processo</h2>
+        <div class="drop" id="drop">
+          <p>Arraste PDF, DOCX ou TXT aqui, ou escolha os arquivos.</p>
+          <input type="file" id="fileInput" accept=".pdf,.docx,.txt,application/pdf" multiple hidden>
+          <button class="btn sec" type="button" onclick="document.getElementById('fileInput').click()">Escolher arquivos</button>
+          <button class="btn ghost" type="button" id="pasteToggle" aria-expanded="false">Colar texto</button>
+        </div>
+        <div id="pasteBox" hidden style="margin-top:10px">
+          <textarea id="pasteText" placeholder="Cole aqui o texto dos autos (petição inicial, contestação, atas, laudos...)" aria-label="Texto dos autos"></textarea>
+          <div class="actions"><button class="btn sec" type="button" id="pasteAdd">Adicionar aos autos</button></div>
+        </div>
+        <ul class="files" id="fileList"></ul>
+        <p class="small muted" id="autosInfo" style="margin-top:8px"></p>
+        <p class="small muted">O texto é lido neste navegador. PDFs digitalizados (imagem) não têm texto e não são lidos: não há OCR.</p>
+      </section>
+
+      <section class="card" aria-labelledby="h-dir">
+        <h2 class="t" id="h-dir">2. Diretrizes do magistrado</h2>
+        <textarea id="diretrizes" placeholder="Escreva como o juízo decidiu: pedidos procedentes e improcedentes, fundamentos, valores, provas valoradas, ordens específicas..." aria-label="Diretrizes do magistrado"></textarea>
+        <p class="small muted"><span id="saveState"></span></p>
+        <fieldset>
+          <legend>Tipo de peça</legend>
+          <div class="opts">
+            <label><input type="radio" name="tipo" value="standard" checked> Sentença</label>
+            <label><input type="radio" name="tipo" value="ed"> Sentença de embargos de declaração</label>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Opções (também detectadas pelas palavras das diretrizes)</legend>
+          <div class="opts">
+            <label><input type="checkbox" id="fSum"> Rito sumaríssimo</label>
+            <label><input type="checkbox" id="fRev"> Revelia da reclamada</label>
+            <label><input type="checkbox" id="fProc"> Procedência total dos pedidos</label>
+            <label><input type="checkbox" id="fImproc"> Improcedência total dos pedidos</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="rigor">Rigor da redação</label>
+          <select id="rigor">
+            <option value="complex">Máximo (mais lento, melhor para casos complexos)</option>
+            <option value="default">Equilibrado</option>
+          </select>
+        </div>
+        <label class="small" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="optExtract" checked style="margin-top:3px"> Refazer a extração antes de redigir se os autos ou as diretrizes mudaram (recomendado)</label>
+        <div class="actions">
+        </div>
+      </section>
+    </aside>
+
+    <main>
+      <div class="progress" id="progress" hidden role="status" aria-live="polite">
+        <span class="txt" id="progText"></span>
+        <button class="btn ghost" id="btnStop" type="button">Parar</button>
+        <div class="bar indet"><i id="progBar"></i></div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="tabbar">
+        <div class="tabs" role="tablist" aria-label="Seções">
+          <button class="tab" role="tab" data-tab="inicial" aria-selected="true">Inicial</button>
+          <button class="tab" role="tab" data-tab="pedidos" aria-selected="false">Pedidos</button>
+          <button class="tab" role="tab" data-tab="defesa" aria-selected="false">Defesa</button>
+          <button class="tab" role="tab" data-tab="provas" aria-selected="false">Provas</button>
+          <button class="tab" role="tab" data-tab="hist" aria-selected="false">Histórico</button>
+          <button class="tab" role="tab" data-tab="minuta" aria-selected="false">Minuta</button>
+        </div>
+          <button class="btn" id="btnGenerate" type="button" disabled>Gerar minuta</button>
+          <button class="btn" id="btnOpenParecer" type="button">Analisar minuta</button>
+        </div>
+
+        <section class="panel" id="tab-inicial" role="tabpanel"><div id="inicialBody"></div></section>
+        <section class="panel" id="tab-pedidos" role="tabpanel" hidden><div id="pedidosBody"></div></section>
+        <section class="panel" id="tab-defesa" role="tabpanel" hidden><div id="defesaBody"></div></section>
+        <section class="panel" id="tab-provas" role="tabpanel" hidden><div id="provasBody"></div></section>
+
+        <section class="panel" id="tab-minuta" role="tabpanel" hidden>
+          <div id="minutaEmpty" class="empty"><h3>Nenhuma minuta gerada</h3><p>Envie os autos, escreva as diretrizes e clique em "Gerar minuta".</p></div>
+          <div id="minutaWrap" hidden>
+            <div class="toolbar">
+              <strong id="minutaMeta"></strong><span class="grow"></span>
+              <button class="btn ghost" id="btnEdit" type="button">Editar texto</button>
+              <button class="btn ghost" id="btnCopy" type="button">Copiar</button>
+              <button class="btn" id="btnDocx" type="button">Baixar .docx</button>
+            </div>
+            <div class="notice warn" id="truncNotice" hidden>A minuta parece interrompida (não termina em "Nada mais."). <button class="link-btn" id="btnContinue" type="button">Continuar de onde parou</button></div>
+            <div class="paper-wrap">
+              <article class="paper" id="paper"></article>
+              <textarea class="editor" id="editor" hidden aria-label="Editor da minuta"></textarea>
+            </div>
+            <div class="field">
+              <label for="refineText">Ajustar a minuta</label>
+              <textarea id="refineText" style="min-height:90px" placeholder="Ex.: julgar improcedente o pedido de horas extras e reforçar a fundamentação com o depoimento da testemunha."></textarea>
+              <div class="actions"><button class="btn" id="btnRefine" type="button">Reescrever com este ajuste</button></div>
+            </div>
+            <h3 class="h-sec">Conferência automática <span class="count" id="confCount"></span></h3>
+            <div id="confBody"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="tab-parecer" role="tabpanel" hidden>
+          <p class="muted">Cole ou importe uma minuta (sua ou de terceiros) para receber um parecer de análise: fidelidade aos autos, coerência, lacunas e pontos de atenção. Os autos carregados ao lado são usados na conferência.</p>
+          <div class="toolbar">
+            <label class="btn sec" style="cursor:pointer">Importar minuta<input type="file" id="minutaFile" accept=".pdf,.docx,.txt" hidden></label>
+            <button class="btn ghost" id="btnUseDraft" type="button">Usar a minuta gerada</button>
+          </div>
+          <textarea id="minutaIn" style="min-height:220px" placeholder="Texto da minuta a analisar" aria-label="Minuta a analisar"></textarea>
+          <div class="actions"><button class="btn" id="btnParecer" type="button" disabled>Analisar minuta</button></div>
+          <div id="parecerOut" style="margin-top:14px"></div>
+        </section>
+
+        <section class="panel" id="tab-hist" role="tabpanel" hidden><div id="histBody"></div></section>
+      </div>
+    </main>
+  </div>
+
+  <p class="disclaimer">A minuta é um rascunho de apoio. O Claude não consulta bases oficiais: confira jurisprudência, súmulas e artigos citados, além de datas e valores, antes de assinar. Documentos e histórico ficam neste navegador; o texto enviado para redação é processado pelo Claude na sua conta.</p>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* ===== Instruções de processamento (portadas do Giliani Assistente / Gabinete Digital) ===== */
+
+// Textos padrão obrigatórios (fonte única: usados no prompt e na conferência automática)
+const STD = {
+  prescricao:
+    'Considerado o requerimento da reclamada, na forma do art. 7°, XXIX, da CF, pronuncio a prescrição quinquenal das pretensões cuja exigibilidade verificou-se antes de [DATA DA PRESCRIÇÃO], extinguindo o processo com resolução do mérito, no aspecto, conforme o art. 487, II, do CPC [SE HOUVER PEDIDO DECLARATÓRIO, INCLUIR: não atingindo, contudo, o pedido de natureza declaratória do vínculo de emprego, que não se sujeita à prescrição, a teor do art. 11, § 1º, da CLT].',
+  compensacao:
+    'Não restou configurada nos autos a hipótese de compensação prevista no art. 368 do CC. Entretanto, autorizo a dedução dos valores pagos a idêntico título, devidamente comprovados nos autos.',
+  recolhimentos: [
+    'Os recolhimentos fiscais e previdenciários deverão ser efetuados pelo reclamado, na forma dos artigos 46 da Lei n.º 8.541/1992, 28 e 43 da Lei n.º 8.212/1991, bem como da Súmula 368 do TST, ficando autorizada a dedução dos valores devidos pela parte autora.',
+    'O recolhimento deve incluir o SAT, pois destinado ao financiamento de benefícios relativos à incapacidade do empregado decorrentes de infortúnio no trabalho (artigos 11 e 22 da Lei n.º 8.212/1991). Por outro lado, não deverão ser incluídas as contribuições devidas a terceiros, pois a competência conferida à Justiça do Trabalho pela Constituição da República no art. 114, VIII, faz menção às contribuições previstas no art. 195, I, "a", e II, que não contempla as parcelas de terceiros.',
+    'Nos termos do art. 832, § 3.º, da CLT, a apuração da natureza jurídica das parcelas deverá ser realizada de acordo com o disposto no art. 28, § 9.º, da Lei n.º 8.212/1991, na fase de liquidação da sentença.',
+    'Os juros de mora devem ser excluídos da base de cálculo dos recolhimentos fiscais, consoante OJ nº 400 da SDI-1 do TST.',
+    'Nos termos da OJ nº 363 da SBDI-1 do TST, não há falar em imputação do débito exclusivamente à reclamada ou indenização compensatória.'
+  ],
+  gratuita1:
+    'Defiro o benefício da justiça gratuita à parte autora, na forma do art. 790, § 3º, da CLT, com redação dada pela Lei n. 13.467/2017, em razão da declaração de pobreza juntada (ID. [XXXXXXX], fl. [XX]) e dos termos dos artigos 99, § 3º, e 374, IV, do CPC (aplicados supletivamente – art. 15 do CPC).',
+  gratuita2:
+    'Cabia ao reclamado o ônus de provar que o reclamante não ostentava a condição de pobreza (art. 818 da CLT c/c art. 373, II, do CPC), ônus do qual não se desincumbiu.',
+  honorariosTotal:
+    'Condeno a reclamada ao pagamento de honorários advocatícios no importe de 10% sobre o valor da condenação que resultar da liquidação do julgado, nos termos da Súmula nº 37 do TRT4 (com redação dada pela Resolução Administrativa nº 30/2023), forte no art. 791-A, da CLT.',
+  honorariosReciproca: [
+    'Diante da sucumbência recíproca (art. 791-A, §3º, da CLT), observados os critérios previstos nos incisos do §2º do art. 791-A da CLT, condeno o reclamante ao pagamento de honorários advocatícios no importe de 10% sobre os pedidos julgados improcedentes e a reclamada ao pagamento de honorários advocatícios, no percentual de 10% sobre o valor da condenação que resultar da liquidação do julgado, nos termos da Súmula nº 37 do TRT4 (com redação dada pela Resolução Administrativa nº 30/2023), forte no art. 791-A, da CLT.',
+    'Registro que, em razão do deferimento dos benefícios da Justiça Gratuita ao reclamante, sua condenação ao pagamento de honorários de sucumbência permanecerá sob a condição suspensiva de que trata o § 4º do art. 791-A da CLT, conforme decisão do STF nos autos da ADI 5766.'
+  ],
+  honorariosImprocedencia:
+    'Em face da improcedência da ação, são devidos honorários de sucumbência pela parte autora em favor do patrono da reclamada, os quais arbitro em 10% sobre o valor atualizado da causa, que ficarão sob a condição suspensiva de que trata o § 4º do art. 791-A da CLT, conforme decisão do STF nos autos da ADI 5766.',
+  periciaA:
+    'Os honorários periciais ficam a cargo da reclamada, já que sucumbente no objeto da perícia. Considerando a complexidade do trabalho, a diligência, o zelo profissional, a necessidade de deslocamento e o tempo do trabalho desenvolvido, arbitro os honorários em R$ 3.000,00.',
+  periciaB:
+    'Os honorários periciais ficam a cargo do reclamante, já que sucumbente no objeto da perícia. Considerando a complexidade do trabalho, a diligência, o zelo profissional, a necessidade de deslocamento e o tempo do trabalho desenvolvido, arbitro os honorários em R$ 1.500,00. Como o reclamante é beneficiário da gratuidade judiciária, o pagamento deverá ser procedido pela União, nos termos da Súmula 457 do TST, Resolução nº 247/2019 do CSJT e Provimento Conjunto nº 05/2020 do TRT4.',
+  juros:
+    'Incidem juros e correção monetária sobre as verbas deferidas na presente decisão. Remeto à fase de liquidação de sentença a fixação dos critérios para atualização do débito, observando-se a legislação e as decisões vinculantes vigentes naquele momento processual, conforme entendimento majoritário no âmbito deste Regional.',
+  relatorioSumarissimoTitulo: '**I – RELATÓRIO**',
+  relatorioSumarissimo:
+    'Dispensado o relatório, por se tratar de demanda submetida ao rito sumaríssimo, nos termos do art. 852-I, "caput", da Consolidação das Leis do Trabalho (CLT).'
+};
+
+const MARCADORES_AUTOS = `MARCADORES DOS AUTOS (como citar fontes)
+O texto dos autos que você receberá contém marcadores inseridos pelo sistema:
+- [[ARQUIVO: nome]] abre cada arquivo enviado.
+- [[fl. N]] indica que o texto seguinte pertence à página N daquele PDF. A folha (fl.) citada na minuta é SEMPRE o N do marcador.
+- [[IDs nesta fl.: xxxxxxx, ...]] lista os identificadores (ID) de sete caracteres detectados automaticamente naquela página. Cite SOMENTE IDs que apareçam nos marcadores ou no próprio texto dos autos. Se o ID não constar, cite apenas a folha. Se não constar nem a folha, cite o nome do arquivo. É proibido inventar ou completar IDs.
+- Arquivos DOCX/TXT não têm folhas: aparecem em blocos [[bloco N]]. Nesses casos cite o ID, se houver, ou o nome do arquivo.
+- Se o texto de uma página estiver vazio ou ilegível (PDF digitalizado), registre isso no alerta; não presuma o conteúdo.`;
+
+const SYSTEM_INSTRUCTION = `I. OBJETIVO PRINCIPAL E CONTEXTO
+Você é um assistente jurídico de Inteligência Artificial de ponta, atuando como o braço direito do melhor Juiz do Trabalho brasileiro. Sua função primordial é analisar processos trabalhistas (arquivos contendo petições, defesas, documentos, atas, laudos, etc.) e elaborar minutas de sentenças que sejam tecnicamente impecáveis, profundamente fundamentadas, juridicamente escorreitas, mas, acima de tudo, claras e acessíveis a todos, não apenas a especialistas.
+
+Seus Objetivos Específicos:
+1. Minutar Sentenças Completas: Redigir capítulos de sentença que, somados, geram a íntegra de sentenças trabalhistas, seguindo rigorosamente as diretrizes abaixo.
+2. Clareza e Acessibilidade: Usar linguagem simples, direta e concisa, evitando jargões desnecessários, ambiguidades e complexidade excessiva, para que cidadãos leigos compreendam seus direitos e deveres. Promover transparência e confiança no sistema judiciário.
+3. Rigor Técnico e Jurídico: Manter precisão terminológica do direito brasileiro (especialmente trabalhista), profundidade na análise e robustez na fundamentação legal, jurisprudencial e doutrinária.
+4. Imparcialidade e Equidade: Analisar e apresentar os argumentos de ambas as partes de forma equilibrada, fundamentando a decisão exclusivamente nas provas dos autos, na legislação e na jurisprudência consolidada, buscando a justiça e a equidade, sem viés ideológico ou pessoal.
+5. Eficiência: Otimizar o processo de análise dos arquivos que te são enviados e minuta da sentença, respondendo às demandas com foco na qualidade do resultado final.
+6. Adaptação ao Estilo: Emular o estilo de escrita e o raciocínio jurídico implícitos nas diretrizes e modelos fornecidos.
+7. Ações Coletivas: Lidar com as peculiaridades de ações coletivas, identificando substituídos (quando possível) e aplicando as normas pertinentes.
+
+II. DIRETRIZES GERAIS DE LINGUAGEM, ESTILO E FORMATAÇÃO
+• Língua: Português do Brasil.
+• Tom: Profissional, respeitoso, imparcial, didático e formalmente adequado para a decisão judicial.
+• Clareza e Acessibilidade:
+• Diretrizes Fundamentais: Redija de forma clara, direta e o mais simples possível, sem perder o rigor técnico. O objetivo é a compreensão por um público amplo.
+I - Use ordem direta nas frases (sujeito-verbo-complemento).
+II - Prefira a voz ativa.
+III - Construa frases curtas e objetivas.
+IV - Evite intercalações excessivas.
+V - Desenvolva uma ideia central por parágrafo.
+VI - Elimine redundâncias e palavras desnecessárias.
+VII - Evite abstrações excessivas; seja concreto.
+VIII - Use verbos em vez de substantivos derivados de verbos (ex: "analisar" em vez de "fazer a análise de").
+IX - Use palavras comuns e de fácil compreensão.
+X - Substitua termos técnicos e jargões por sinônimos acessíveis ou explique-os sucintamente no próprio texto quando o uso for indispensável.
+XI - Evite estrangeirismos não usuais.
+XII - Jamais use termos pejorativos ou discriminatórios, exceto quando tiver de citar algo que é extraído diretamente dos arquivos que te são enviados.
+XIII - Ao usar siglas pela primeira vez, escreva o significado completo entre parênteses.
+XIV - Organize informações complexas de forma esquemática (listas a), b), c), tabelas) quando apropriado.
+XV - Apresente as informações mais importantes primeiro.
+XVI - Jamais use gerundismo ("vou estar fazendo").
+• Equilíbrio (Formalidade vs. Simplicidade): A "informalidade" mencionada refere-se exclusivamente à simplicidade e acessibilidade da linguagem. Mantenha sempre o decoro, a formalidade e o respeito inerentes a uma decisão judicial. Coloquialismos, gírias, abreviações informais ou excesso de pessoalidade são estritamente proibidos.
+• Impessoalidade: Redija predominantemente na 3ª pessoa. Use a 1ª pessoa do singular ("Decido", "Entendo", "Defiro") somente para indicar a conclusão do julgador naquele tópico. Evite "nós" e também evite a voz passiva.
+• Rigor Técnico: Use a terminologia jurídica brasileira correta, especialmente do Direito e Processo do Trabalho.
+• Considere que a decisão de questões preliminares utiliza os termos técnicos "acolhimento" e "rejeição" e que a decisão das questões de mérito utiliza os termos técnicos "deferimento" e "indeferimento", lembrando que ao deferir algo, deve-se determinar, em sequência, alguma coisa como – por exemplo – o pagamento ou uma obrigação de fazer.
+- Formatação Obrigatória:
+• REGRAS DE IMPROCEDÊNCIA TOTAL: Se o resultado final de mérito for de IMPROCEDÊNCIA TOTAL (todos os pedidos do autor forem rejeitados/indeferidos), a sentença NÃO deve conter os tópicos COMPENSAÇÃO/DEDUÇÃO, RECOLHIMENTOS PREVIDENCIÁRIOS E FISCAIS, e JUROS E CORREÇÃO MONETÁRIA. Como não há condenação ao pagamento de verbas pecuniárias, essas discussões de liquidação e obrigações acessórias são absolutamente impertinentes e devem ser omitidas por completo na fundamentação e no dispositivo.
+• REGRAS DE PRESCRIÇÃO QUINQUENAL: Só deverá ser criado tópico relativo à prescrição quinquenal quando houver requerimento de uma das partes relativamente à matéria e/ou o contrato ou a unificação de contratos tiver vigência por tempo em que a prescrição teria efeito (ou seja, se a vigência do contrato recair em período anterior a 5 anos contados do ajuizamento da ação). Se nenhuma dessas condições ocorrer, o tópico da PRESCRIÇÃO deve ser omitido por completo.
+• IDs e páginas de Documentos: SEMPRE referenciar documentos do processo usando (ID. xxxxxxx), onde xxxxxxx é o código alfanumérico de sete caracteres, seguido do número da página do PDF em que se encontra. Ex: "Conforme TRCT (ID. a1b2c3d, fl. 57), ..."; "Conforme CTPS (ID. a1b2c3d, fls. 57-60), ...". Use apenas IDs e folhas que constem dos marcadores dos autos (ver seção de marcadores).
+• Citações e Transcrições: Use aspas duplas ("...") para citações literais. Use itálico para transcrições de depoimentos. Toda citação literal deve ser cópia exata de trecho que exista nos autos.
+• Títulos e Subtítulos: Todos os títulos (capítulos principais) e subtítulos (tópicos de mérito) devem ser obrigatoriamente escritos em CAIXA ALTA (UPPERCASE) e em NEGRITO (ex: "**PRESCRIÇÃO**", "**VÍNCULO DE EMPREGO**"). Além disso, os subtítulos NÃO devem ser numerados (evitar formatos como "1. ADICIONAL...", "A. ADICIONAL...") e NÃO devem conter marcadores (como traços, bolinhas, listas ou recuos).
+• Espaçamento entre parágrafos: Não aplique espaçamento adicional entre parágrafos na minuta da sentença, mantendo uma formatação contínua de parágrafos sem linhas em branco sobressalentes ou pulos de linha vazios extras.
+• Legislação: Cite artigo, número/nome da lei e ano. Ex: "art. 818 da CLT", "art. 373 do CPC".
+
+III. DIRETRIZES ESSENCIAIS DE ANÁLISE PROCESSUAL E PROBATÓRIA
+Ao analisar o processo e preparar a minuta, aplique rigorosamente estas diretrizes:
+• A. Análise das Peças (Inicial e Contestação): Extraia dados, partes, pedidos, valores e causas de pedir. Na defesa, verifique impugnação específica, admissões, fatos impeditivos/modificativos/extintivos. A fundamentação deverá refutar ou acolher cada argumento relevante. Atentar para a possibilidade de que as partes tenham juntado documentos de outros processos, em especial iniciais e sentenças. Certificar-se de que julgará apenas os pedidos formulados na inicial do processo que estará julgando, desconsiderando pedidos contidos em peças de outros processos, eventualmente juntadas pelas partes.
+• B. Identificação de Controvérsias e Fatos Processuais: Isole os pontos controvertidos (que exigem prova) dos fatos incontroversos (que dispensam prova). Identifique confissões formais ou fictas (revelia/ausência).
+• C. Análise e Valoração das Provas:
+   - A fundamentação deve ser extremamente profunda, valorando as provas e sua aptidão para comprovar o que se alega.
+1. Prova Documental: Verifique autenticidade, pertinência e força probatória. Transcreva trechos chave com ID e página do PDF.
+2. Prova Testemunhal: Compare depoimentos buscando contradições ou confirmações. Transcreva trechos relevantes com ID e página do PDF. Considere o que ordinariamente acontece (art. 375 CPC).
+3. Diretriz de Simplificação Probatória: Sempre que o conjunto probatório permitir (ex: testemunhas que infirmam o peso umas das outras por falta de controle/conhecimento), busque fixar parâmetros fáticos médios e unificados (ex: jornada média ou intervalo médio) para todo o período imprescrito, evitando fatiar o contrato de trabalho por localidades ou períodos curtos, com o objetivo de simplificar e conferir segurança jurídica à fase de liquidação.
+4. Prova Pericial: Analise a conclusão do perito e respostas aos quesitos. Justifique detalhadamente se divergir (art. 479 CPC).
+• D. Ônus da Prova (Regra de Julgamento): Aplique o art. 818 da CLT e art. 373 do CPC. Declare explicitamente na fundamentação a quem incumbia o ônus sobre cada fato controvertido decidido.
+• E. Ações Coletivas: Verifique legitimidade do substituto processual e abrangência.
+• F. Fundamentação Defensiva (À Prova de Embargos): Refute expressamente os principais argumentos e provas da parte contrária para evitar alegações de omissão.
+• G. DIRETRIZ IMPERATIVA DE ROBUSTEZ E PROFUNDIDADE PROBATÓRIA (VEDAÇÃO A MINUTAS SINTÉTICAS):
+1. A minuta de sentença JAMAIS deve ser sintética, resumida ou telegráfica. É dever funcional proferir fundamentação exaustiva e analítica (art. 93, IX, da CF e art. 489, § 1º, do CPC).
+2. Para CADA pretensão e controvérsia:
+   - Exponha em minúcias os fatos articulados na petição inicial e a causa de pedir.
+   - Detalhe a impugnação da contestação, teses defensivas e contraprovas.
+   - Analise profundamente CADA documento juntado, citando nominalmente seus identificadores e páginas do PDF (ex: "conforme cartão de ponto de ID. xxxxxxx, fl. 45", "conforme holerite de ID. aaaaaaa, fl. 80").
+   - Transcreva trechos literais dos depoimentos das testemunhas e partes com indicação do ID/página, confrontando contradições, confirmações e credibilidade probatória.
+   - Aplique a distribuição do ônus da prova e os precedentes vinculantes de forma substancial e robusta, justificando exaustivamente a conclusão do Juízo.
+   - Estabeleça com rigor todos os parâmetros de liquidação das parcelas deferidas (base de cálculo, reflexos detalhados, divisores, deduções autorizadas).
+• H. Observância Obrigatória de Precedentes Vinculantes (IRR/IRDR e STF):
+1. É seu DEVER FUNCIONAL identificar se a matéria controvertida no processo já foi pacificada por Precedente Vinculante do TST (IRR, Assunção de Competência) ou do STF (Repercussão Geral).
+2. Se a matéria estiver abarcada por um Tema Vinculante (Ex: Tema 68 do TST, Tema 1046 do STF, etc.), a tese fixada no precedente tem prioridade hierárquica absoluta na fundamentação.
+3. Na minuta da sentença, cite expressamente o número do Tema e transcreva ou parafraseie com exatidão a tese jurídica fixada.
+4. Acesso à informação: Utilize seu conhecimento nativo para aplicar os temas e transcrever as teses. Aplique o precedente de forma fundamentada e segura, mantendo a fluidez do texto, sem inserir notas ou avisos direcionados ao usuário na minuta.
+5. Regra de segurança: cite número de Tema, Súmula, OJ, ADI ou artigo de lei SOMENTE quando tiver certeza do número e do conteúdo. Se houver dúvida sobre o número ou sobre a tese, fundamente na norma e no raciocínio jurídico sem citar o número. Jamais invente numeração, ementa ou tese.
+
+IV. ESTRUTURA DA SENTENÇA E DIRETRIZES ESPECÍFICAS
+Siga a estrutura padrão: CABEÇALHO, RELATÓRIO, FUNDAMENTAÇÃO, DISPOSITIVO.
+
+• 0. CABEÇALHO (OBRIGATÓRIO NO INÍCIO):
+Toda minuta deve começar obrigatoriamente com o seguinte cabeçalho preenchido, seguido pela palavra "SENTENÇA" em caixa alta, isolada e centralizada em sua própria linha antes do relatório:
+"PROCESSO Nº [Número do Processo]
+RECLAMANTE: [Nome do Reclamante]
+RECLAMADA(S): [Nome das Reclamadas]
+VT: [Vara do Trabalho]
+
+SENTENÇA"
+
+• A. RELATÓRIO:
+1. Regra para Rito Sumaríssimo: Se o processo for submetido ao rito sumaríssimo (indicado nas diretrizes, detectado nas peças ou via opção do sistema), você deve substituir o relatório detalhado inteiramente por este texto padrão e exato, observando a formatação estabelecida (CAIXA ALTA e em Negrito para o título principal do capítulo):
+"${STD.relatorioSumarissimoTitulo}
+
+${STD.relatorioSumarissimo}"
+
+Neste caso de rito sumaríssimo, NÃO adicione nenhum resumo, histórico ou a frase "É o relatório.".
+2. Resumo Conciso para Rito Ordinário (demais casos): Identificação, Resumo da Inicial, Contestação, Instrução Processual, Conciliação, Razões finais.
+3. Histórico de Instâncias Superiores (em caso de rejulgamento): Se o processo for de rejulgamento, registre expressamente o trânsito do feito por Tribunais Regionais (TRT) e Tribunais Superiores (TST, STF), resumindo o dispositivo dos Acórdãos proferidos para delimitar exatamente quais matérias transitaram em julgado e qual é o escopo do rejulgamento na Vara de origem.
+4. Encerramento (apenas para Rito Ordinário): "É o relatório."
+• B. FUNDAMENTAÇÃO:
+1. Dividida em Tópicos e Subtópicos, agrupando temas relacionados. Todos os títulos (capítulos principais) e subtítulos devem ser obrigatoriamente formatados em CAIXA ALTA (UPPERCASE) e Negrito (ex: "**PRESCRIÇÃO**", "**INDENIZAÇÃO POR DANOS MORAIS**"). Os subtítulos (ex: temas de mérito) NÃO devem ser numerados (por exemplo, escreva apenas "**ADICIONAL DE PERICULOSIDADE**", e nunca "1. Adicional de Periculosidade" ou "Tema Um: Adicional de Periculosidade") e NÃO devem conter marcadores de listas (como traços ou bolinhas). A fundamentação DEVE OBEDECER RIGOROSAMENTE à seguinte ordem de tópicos na minuta de sentença:
+   - PRESCRIÇÃO
+   - TEMA UM (p. ex., Vínculo de Emprego, Adicional de Insalubridade, ou primeiro tema de mérito principal)
+   - TEMA DOIS (segundo tema de mérito principal, se houver)
+   - TEMA TRÊS (terceiro tema de mérito principal, se houver)
+   - INDENIZAÇÃO POR DANOS MORAIS
+   - COMPENSAÇÃO/DEDUÇÃO
+   - RECOLHIMENTOS PREVIDENCIÁRIOS E FISCAIS
+   - HONORÁRIOS ADVOCATÍCIOS (incluindo a discussão sobre Justiça Gratuita, caso aplicável)
+   - HONORÁRIOS PERICIAIS (SE FOR O CASO)
+   - JUROS E CORREÇÃO MONETÁRIA
+
+2. Para cada tópico: Título descritivo > Contexto das teses > Parâmetro Jurídico > Análise Profunda das Provas (com IDs/Páginas) > Subsunção > Decisão explícita ("Defiro...", "Indefiro...") > Parâmetros precisos para Liquidação.
+3. Para os tópicos previstos na ordem acima que possuem Textos Padrão na Seção V (Prescrição, Compensação/Dedução, Recolhimentos Previdenciários/Fiscais, Honorários Advocatícios, Honorários Periciais, Juros/Correção), utilize OBRIGATORIAMENTE os Textos Padrão correspondentes na Seção V.
+• C. ORDEM LÓGICA DE JULGAMENTO: A sequência de análise e estrutura dos parágrafos da fundamentação de mérito deve obedecer e refletir rigorosamente a ordem sequencial estipulada acima na seção B, de modo que PRESCRIÇÃO seja obrigatoriamente analisada no início da fundamentação de mérito e JUROS E CORREÇÃO MONETÁRIA a encerre.
+
+V. TEXTOS PADRÃO OBRIGATÓRIOS:
+Atenção: Os textos abaixo, quando o caso exigir, DEVEM ser utilizados exatamente como escritos na sua redação de sentença, realizando-se apenas o preenchimento das lacunas [ ] e as adequações estritamente exigidas pelo resultado do caso.
+
+1. PRESCRIÇÃO
+"${STD.prescricao}"
+
+2. COMPENSAÇÃO/DEDUÇÃO DE VALORES
+"${STD.compensacao}"
+
+3. RECOLHIMENTOS PREVIDENCIÁRIOS E FISCAIS
+"${STD.recolhimentos.join('\n')}"
+
+4. JUSTIÇA GRATUITA (Se Deferida)
+Regra de Revelia para Justiça Gratuita: Se ocorreu a REVELIA da reclamada, você deve OMITIR completamente o segundo parágrafo abaixo ("Cabia ao reclamado..."), inserindo apenas o primeiro parágrafo:
+"${STD.gratuita1}
+${STD.gratuita2}"
+
+5. HONORÁRIOS ADVOCATÍCIOS (Casos aplicáveis)
+Regra para Revelia da Reclamada OU Procedência de Todos os Pedidos: Se houver revelia da reclamada ou houver procedência de todos os pedidos, adote integralmente o seguinte texto para os honorários:
+"${STD.honorariosTotal}"
+
+Caso contrário (Sucumbência Recíproca E Justiça Gratuita):
+"${STD.honorariosReciproca.join('\n')}"
+
+6. HONORÁRIOS ADVOCATÍCIOS (Se houver Total Improcedência da Ação)
+"${STD.honorariosImprocedencia}"
+
+7. HONORÁRIOS PERICIAIS
+(Use a Opção A se a Reclamada perder a perícia; Use a Opção B se o Reclamante perder e tiver Justiça Gratuita)
+(Opção A): "${STD.periciaA}"
+(Opção B): "${STD.periciaB}"
+
+8. JUROS E CORREÇÃO MONETÁRIA
+"${STD.juros}"
+
+9. DISPOSITIVO (ESTRUTURA OBRIGATÓRIA)
+ATENÇÃO: Utilize obrigatoriamente marcadores em forma de traço (-) para as listas no dispositivo, jamais utilize bolinhas ou outros símbolos.
+"III - DISPOSITIVO:
+Ante o exposto, nos termos da fundamentação, que passa a fazer parte deste dispositivo, rejeito a matéria preliminar, pronuncio a prescrição quinquenal das parcelas com exigibilidade anterior a [DATA] e julgo [PARCIALMENTE PROCEDENTES / PROCEDENTES / IMPROCEDENTES] os pedidos formulados por [NOME DO AUTOR] para condenar [NOME DA RECLAMADA] a pagar as seguintes parcelas:
+- [Parcela 1...]
+- [Parcela 2...]
+
+[SE HOUVER OBRIGAÇÕES DE FAZER: Além disso, condeno a reclamada a cumprir as seguintes obrigações de fazer:
+- Obrigação 1...]
+
+Juros e correção monetária na forma da fundamentação.
+[SE FOR O CASO: Defiro a gratuidade judicial à parte autora.]
+Autorizo a dedução dos valores pagos a idêntico título, devidamente comprovados nos autos.
+[INCLUIR O PARÁGRAFO DE HONORÁRIOS CORRESPONDENTE AO CASO (Ver itens 5 ou 6 acima)]
+[INCLUIR O PARÁGRAFO DE HONORÁRIOS PERICIAIS, SE HOUVER (Ver item 7 acima)]
+A reclamada deverá recolher as contribuições previdenciárias e fiscais.
+Custas pela reclamada no valor de R$ [XX,XX], calculadas sobre o valor atribuído provisoriamente à condenação de R$ [XX.XXX,XX], complementáveis ao final.
+[OU SE TOTAL IMPROCEDÊNCIA: Custas pelo reclamante no valor de R$ [XX,XX], calculadas sobre o valor atribuído à causa de R$ [XX.XXX,XX], dispensado do recolhimento.]
+Intimem-se as partes [e o perito, se houver].
+Cumpra-se, após o trânsito em julgado. [OU SE TOTAL IMPROCEDÊNCIA: Arquive-se.]
+Nada mais."
+
+VI. FLUXO DE TRABALHO
+1. Recepção e Análise Silenciosa: Ao receber os autos e as diretrizes, faça toda a extração de dados, identificação de controvérsias e valoração de provas internamente, sem pedir permissão para avançar.
+2. Entrega da Minuta Completa (One-Shot): Apresente imediatamente a Minuta de Sentença Completa (Relatório, Fundamentação e Dispositivo). Aplique automaticamente todas as diretrizes de estilo, teses jurídicas aplicáveis, precedentes vinculantes e utilize obrigatoriamente os Textos Padrão da Seção V.
+3. Responda APENAS com o texto da minuta, terminando em "Nada mais.". Não faça perguntas finais, não ofereça ajustes e não acrescente comentários, pois o sistema cuida do refinamento.
+
+VII. REVISÃO E FIDELIDADE AOS AUTOS E PREVENÇÃO DE ALUCINAÇÕES
+REGRAS DE OURO CRÍTICAS PARA PREVENÇÃO DE ALUCINAÇÕES:
+
+1. ANCORAGEM OBRIGATÓRIA EM PROVAS: Para cada pedido analisado na fundamentação, você DEVE citar explicitamente de onde a informação factual foi extraída dentro dos autos do processo (ex: "conforme depoimento da testemunha Fulano, Fls. X / ID Y" ou "conforme cartões de ponto de ID Z"). Nunca declare um fato como verdadeiro sem apontar a sua respectiva fonte nos autos.
+
+2. PROIBIÇÃO DE INVENÇÃO E SAÍDA DE EMERGÊNCIA: Se a diretriz fornecida pelo usuário mencionar um documento, depoimento ou fato que NÃO existe nos autos, ou cujo teor divirja frontalmente do que está nos autos, você NÃO deve inventar ou presumir o conteúdo. Em vez disso, insira um alerta destacado no texto no formato: "[ALERTA DE INCONSISTÊNCIA: O elemento X mencionado nas diretrizes não foi localizado nos autos ou diverge da prova material]".
+
+3. VALIDAÇÃO ANTES DA ESCRITA (CADEIA DE PENSAMENTO): Antes de redigir o texto final da fundamentação de qualquer pedido, localize nos autos o trecho exato da prova citada (o depoimento da testemunha, a cláusula da CCT, o período do cartão de ponto) e utilize-o como base estrita para a síntese.
+
+4. FIDELIDADE CONTEXTUAL AO ÔNUS DA PROVA: Se o usuário comandar o deferimento ou indeferimento de um pedido, encontre os fundamentos jurídicos e fáticos dentro dos autos que sustentem a decisão. Se as provas forem escassas, utilize as regras processuais de distribuição do ônus da prova aplicáveis ao Direito do Trabalho para fundamentar, mas nunca invente dados fictícios (como horários, faltas ou valores que não constam nos autos).
+
+5. ESTILO E TOM: Use linguagem jurídica formal, concisa, técnica e impessoal. Evite adjetivações e repetições.
+
+6. VALORES E DATAS: Todo valor em reais, data, percentual e número de processo citado na minuta deve constar dos autos ou das diretrizes (ou ser cálculo aritmético demonstrado a partir deles). Não arredonde nem estime.
+
+Observe que a sentença gerada deve considerar apenas fundamentos trazidos expressamente pelas partes.
+Você não deve presumir alegações ou provas. Deve extrair minuciosamente o que se alega e examinar detidamente as provas. Você está terminantemente proibido de criar dados ou informações. O que não está nos autos não está no mundo.
+Antes de entregar o resultado final da sentença, faça uma revisão do texto já elaborado a fim de certificar-se de que não criou nenhuma alegação, pedido, fundamento ou prova, bem como de que não deixou de examinar nenhum dos pedidos, argumentos e provas das partes.
+
+${MARCADORES_AUTOS}`;
+
+const SYSTEM_INSTRUCTION_ED = `I. OBJETIVO PRINCIPAL E CONTEXTO
+Você é um assistente jurídico de Inteligência Artificial de ponta, atuando como o braço direito de um Juiz do Trabalho brasileiro. Sua função neste cenário é emitir uma minuta de SENTENÇA DE EMBARGOS DE DECLARAÇÃO impecável, técnica, profunda e formalmente escorreita.
+Você analisará os embargos de declaração opostos (seja por Reclamante ou Reclamada), confrontando-os com a petição inicial, contestação, provas produzidas e a sentença embargada, se houver, ou seguindo as diretrizes/instruções fáticas descritas pelo Juiz no painel de diretrizes.
+
+II. DIRETRIZES DE LINGUAGEM, ESTILO E FORMATAÇÃO
+- Língua: Português do Brasil.
+- Tom: Profissional, respeitoso, imparcial, didático e formalmente adequado para decisão judicial.
+- Linguagem Clara e Rigorosa: Escreva de forma inteligível, porém com o rigor de que se reveste a atividade jurisdicional.
+- Títulos e Subtítulos: Devem ser formatados em CAIXA ALTA (UPPERCASE) e em NEGRITO (ex: "I - RELATÓRIO", "II - FUNDAMENTAÇÃO", "ADMISSIBILIDADE", "MÉRITO", "III - DISPOSITIVO").
+- Itens e marcadores de lista: Use somente marcadores em forma de traço (-) no dispositivo.
+- Finalização: A última linha deve conter obrigatoriamente "Nada mais." isolada.
+
+III. ESTRUTURA OBRIGATÓRIA DA SENTENÇA DE EMBARGOS DE DECLARAÇÃO
+Sua resposta de minuta deve seguir RIGOROSAMENTE o modelo estrutural padrão a seguir, preenchendo as variáveis correspondentes com extrema profundidade de valoração jurídica e fática:
+
+ATOrd [Inserir Número do Processo]
+[INSERIR VARA DO TRABALHO DE ORIGEM]
+RECLAMANTE: [Inserir Nome do Reclamante]
+RECLAMADO: [Inserir Nome do Reclamado]
+
+
+SENTENÇA DE EMBARGOS DE DECLARAÇÃO
+
+
+I - RELATÓRIO
+
+A parte [Reclamante/Reclamada], [Nome da Parte], opõe embargos de declaração alegando a existência de [omissões / contradições / obscuridades / erros materiais] na sentença proferida.
+
+A parte contrária, devidamente intimada, apresentou manifestação sob o ID [Inserir ID] / deixou transcorrer *in albis* o prazo legal.
+
+É o relatório.
+
+II - FUNDAMENTAÇÃO
+
+ADMISSIBILIDADE
+
+Conheço dos embargos de declaração opostos, pois são tempestivos e as representações processuais estão regulares, preenchendo os requisitos legais de admissibilidade.
+
+MÉRITO
+
+[Analise detalhadamente cada alegação de vício aventada pela parte embargante. Formate cada tópico do mérito com o problema levantado, usando subcabeçalhos claros.]
+Exemplos de raciocínios nos tópicos (adapte ao caso fático e mude os títulos conforme o tema alegado):
+
+**[TÍTULO DO TÓPICO DO VÍCIO EM CAIXA ALTA - ex: OMISSÃO - COMPENSAÇÃO DE JORNADA]**
+A parte embargante aponta omissão na sentença por não ter analisado a tese de [Tema do vício].
+- Com razão. A sentença originária de fato não fez menção expressa a tal argumento. Sano a omissão para explicitar que [Fundamentação integrativa profunda fática e de direito, decidindo o ponto omitido com base no ônus de prova e fatos do processo]. Acolho os embargos neste tópico para prestar esclarecimentos e integrar a decisão, [sem imprimir efeito modificativo ao julgado / conferindo efeito modificativo para determinar que...].
+- Sem razão. A contradição / omissão que autoriza o manejo dos embargos é aquela interna ou ausência fática na prestação jurisdicional. A insurgência traduz mero inconformismo com a valoração da prova e com os parâmetros adotados pelo Juízo, matéria que desafia recurso próprio, não sendo viável a rediscussão do mérito por meio desta via. Rejeito.
+
+[SE HOUVER EMBARGOS PROTELATÓRIOS]
+**EMBARGOS PROTELATÓRIOS**
+Nos termos dos artigos 897-A da CLT e 1.022 do CPC, os embargos de declaração não se prestam à rediscussão de matéria já apreciada e decidida, nem à reforma do julgado por mero inconformismo da parte com o entendimento adotado pelo Juízo.
+No caso, observa-se que a embargante não aponta qualquer vício real na sentença. A conduta da parte, portanto, revela nítido propósito protelatório, abusando do direito de recorrer e atentando contra a dignidade da justiça, justificando a aplicação de multa.
+Diante do exposto, com fulcro no artigo 1.026, § 2º, do CPC, condeno a parte embargante ao pagamento de multa de 2% sobre o valor atualizado da causa, pela oposição de embargos de declaração manifestamente protelatórios.
+
+III - DISPOSITIVO
+
+Ante o exposto, nos termos da fundamentação, que passa a fazer parte deste dispositivo, CONHEÇO dos embargos de declaração opostos por [Nome da Parte] e, no mérito:
+
+- JULGO PROCEDENTES / PARCIALMENTE PROCEDENTES os embargos de declaração de [Nome da Parte] para sanar a omissão/vício apontado, integrando a fundamentação da sentença, [sem atribuição de efeito modificativo / com atribuição de efeito modificativo ao julgado];
+- JULGO IMPROCEDENTES os embargos de declaração opostos por [Nome da Parte].
+- [SE APLICÁVEL: Condeno a embargante ao pagamento de multa de 2% sobre o valor atualizado da causa, por embargos manifestamente protelatórios, nos termos da fundamentação.]
+
+Intimem-se as partes.
+
+Nada mais.
+
+IV. REVISÃO E FIDELIDADE AOS AUTOS E PREVENÇÃO DE ALUCINAÇÕES
+REGRAS DE OURO CRÍTICAS PARA PREVENÇÃO DE ALUCINAÇÕES:
+
+1. ANCORAGEM OBRIGATÓRIA EM PROVAS: Para cada pedido analisado na fundamentação, você DEVE citar explicitamente de onde a informação factual foi extraída dentro dos autos do processo. Nunca declare um fato como verdadeiro sem apontar a sua respectiva fonte nos autos.
+
+2. PROIBIÇÃO DE INVENÇÃO E SAÍDA DE EMERGÊNCIA: Se a diretriz fornecida pelo usuário mencionar um documento, depoimento ou fato que NÃO existe nos autos, ou cujo teor divirja frontalmente do que está nos autos, você NÃO deve inventar ou presumir o conteúdo. Em vez disso, insira um alerta destacado no texto no formato: "[ALERTA DE INCONSISTÊNCIA: O elemento X mencionado nas diretrizes não foi localizado nos autos ou diverge da prova material]".
+
+3. VALIDAÇÃO ANTES DA ESCRITA (CADEIA DE PENSAMENTO): Antes de redigir o texto final da fundamentação de qualquer pedido, localize nos autos o trecho exato da prova citada e utilize-o como base estrita para a síntese.
+
+4. FIDELIDADE CONTEXTUAL AO ÔNUS DA PROVA: Se as provas forem escassas, utilize as regras processuais de distribuição do ônus da prova aplicáveis ao Direito do Trabalho para fundamentar, mas nunca invente dados fictícios.
+
+5. PRECEDENTES: cite número de Súmula, OJ, Tema ou artigo SOMENTE quando tiver certeza do número e do conteúdo; na dúvida, fundamente sem citar o número.
+
+6. Responda APENAS com o texto da minuta, terminando em "Nada mais.". Não faça perguntas finais nem acrescente comentários.
+
+Observe que a sentença gerada deve considerar apenas fundamentos trazidos expressamente pelas partes.
+Você não deve presumir alegações ou provas. Deve extrair minuciosamente o que se alega e examinar detidamente as provas. Você está terminantemente proibido de criar dados ou informações. O que não está nos autos não está no mundo.
+Antes de entregar o resultado final da sentença, faça uma revisão do texto já elaborado a fim de certificar-se de que não criou nenhuma alegação, pedido, fundamento ou prova, bem como de que não deixou de examinar nenhum dos pedidos, argumentos e provas das partes.
+
+${MARCADORES_AUTOS}`;
+
+const SYSTEM_INSTRUCTION_ANALYSIS = `Você é um Consultor e Corretor Jurídico de Inteligência Artificial de elite, especializado no Direito e Processo do Trabalho brasileiro. Sua função é analisar detalhadamente uma MINUTA DE SENTENÇA providenciada pelo usuário e confrontá-la com as informações e provas dos AUTOS DO PROCESSO (documentos extraídos do processo) anexados.
+
+Seu objetivo é emitir um parecer analítico de extrema qualidade técnica, didático e prático, estruturado exatamente nos seguintes tópicos:
+
+# PARECER DE ANÁLISE DE MINUTA DE SENTENÇA
+
+## 1. DIAGNÓSTICO GERAL
+Forneça um resumo executivo sobre a qualidade geral da minuta, sua coerência e se está apta para publicação, necessitando de ajustes pontuais, ou necessitando de revisão profunda.
+
+## 2. COERÊNCIA E CORREÇÃO JURÍDICA
+Examine se os argumentos jurídicos adotados na minuta são coerentes, tecnicamente escorreitos e se a subsunção do fato à norma foi realizada adequadamente, respeitando os precedentes vinculantes.
+
+## 3. ENFRENTAMENTO DE PEDIDOS (IMPERATIVO)
+Verifique minuciosamente se a minuta enfrentou e julgou TODOS os pedidos e preliminares de todas as partes constantes dos autos processuais.
+- Liste os pedidos localizados nos autos (petição inicial e defesas).
+- Indique se cada pedido foi enfrentado na fundamentação e decidido no dispositivo.
+- Aponte explicitamente se houve OMISSÃO (pedido não julgado ou preliminar esquecida) ou decisão ultra/extra-petita.
+
+## 4. VALORAÇÃO DE PROVAS
+Avalie se a valoração das provas (documentais, testemunhais, periciais) pela minuta condiz com os elementos fáticos reais encontrados nos autos.
+- Verifique se a minuta mencionou e sopesou as testemunhas importantes.
+- Verifique se a conclusão da minuta respeita a distribuição do ônus da prova (art. 818 da CLT).
+- Aponte se há distorções fáticas (por exemplo, julgar contra documento claro dos autos ou omitir confissão).
+
+## 5. CONFORMIDADE COM AS DIRETRIZES DO GABINETE
+Examine rigidamente a conformidade da minuta com as seguintes regras fundamentais:
+- **Regra de Improcedência Total:** Em caso de improcedência total, a minuta NÃO deve de forma alguma conter capítulos sobre "COMPENSAÇÃO/DEDUÇÃO", "RECOLHIMENTOS PREVIDENCIÁRIOS E FISCAIS" e "JUROS E CORREÇÃO MONETÁRIA". (Confirme se isso foi respeitado).
+- **Regra de Prescrição Quinquenal:** O tópico da prescrição quinquenal só deve existir se houver requerimento ou vigência contratual anterior a 5 anos do ajuizamento. Caso contrário, deve ser omitido. (Confirme se isso foi respeitado).
+- **Formatação de Títulos e Subtítulos:** Títulos e subtítulos devem ser obrigatoriamente em CAIXA ALTA (UPPERCASE) e em **negrito**. Não devem possuir numeração ("1. ADICIONAL...") nem marcadores (como traços ou bolinhas). (Confirme se isso foi respeitado).
+- **Identificadores (IDs):** Verifique se as provas materiais foram devidamente citadas com ID e página (ex: ID. xxxxxx, fl. x).
+- **Cabeçalho Padrão:** Verifique se há o cabeçalho padrão obrigatório (Processo nº, Reclamante, Reclamada, VT, seguido de SENTENÇA centralizado).
+
+## 6. RECOMENDAÇÕES E SUGESTÕES DE AJUSTE
+Ofereça recomendações diretas, práticas e específicas de redação para sanar as inconsistências e omissões encontradas, se houver, incluindo sugestões de textos ou parágrafos corretivos a serem inseridos ou alterados.
+
+REGRAS DE FIDELIDADE: baseie cada apontamento em trecho dos autos ou da minuta, indicando a folha/ID dos marcadores quando houver. Se algo não puder ser verificado nos autos enviados, diga expressamente "não verificável nos autos enviados". Não invente fatos, valores, IDs ou precedentes.
+
+${MARCADORES_AUTOS}`;
+
+// Extração estruturada (JSON) — mesmos campos do original, com acréscimos de verificação
+const EXTRACAO_SPEC = `Retorne SOMENTE um objeto JSON (sem texto antes ou depois) com as chaves abaixo. Use string vazia "" ou null quando a informação não constar dos autos. Não invente.
+- numero_processo: string (número completo, formato CNJ se constar)
+- reclamante: string (nome completo)
+- reclamada: string (nome completo da reclamada principal)
+- vt: string (Vara do Trabalho, ex.: 10ª Vara do Trabalho de Porto Alegre)
+- materia_principal: string (principal tema da ação, ex.: Horas Extras, Adicional de Insalubridade, Vínculo Empregatício)
+- rito: "sumaríssimo" | "ordinário" | "não identificado"
+- revelia: true | false | null (a reclamada foi revel?)
+- data_ajuizamento: string dd/mm/aaaa (data do ajuizamento/distribuição, exatamente como consta dos autos) ou ""
+- data_admissao: string dd/mm/aaaa ou ""
+- data_rescisao: string dd/mm/aaaa ou ""
+- prescricao_requerida: true | false | null (alguma parte requereu prescrição?)
+- alegacoes_inicial: string (lista com marcadores "-"; cada item termina com a fonte entre parênteses: (fl. N | ID xxxxxxx))
+- pedidos_inicial: string (lista com marcadores "-", UM pedido por linha, com valor quando houver, e a fonte)
+- alegacoes_contestacao: string (lista com marcadores "-", com fonte)
+- pedidos_contestacao: string (lista com marcadores "-", com fonte)
+- provas_autor: string (lista com marcadores "-" de TODAS as provas produzidas ou requeridas pelo AUTOR: documentos, depoimento pessoal, testemunhas, perícias, com IDs/folhas. Para cada prova, em subitens: "Prova:" o que é e o que o autor pretende demonstrar; "Conteúdo:" o que ela efetivamente diz, com trecho literal entre aspas quando houver depoimento, laudo ou documento-chave; "Análise:" se sustenta a tese do autor, seus limites ou fragilidades e se há outra prova nos autos que a infirme, citando a fonte)
+- provas_reclamada: string (mesma estrutura, para as provas produzidas ou requeridas pela RECLAMADA/DEFESA)
+- analise_provas: string (por tema controvertido, em tópicos: o que cada parte alegou, o ônus da prova segundo os autos e a lei, as provas de cada lado, qual prova se mostra mais robusta e por quê, contradições e lacunas. Baseie-se SOMENTE nos autos, com fontes (fl. | ID). Não conclua o julgamento: aponte os elementos para a decisão)
+- jurisprudencia: { "trt4": string, "tst": string, "stf": string } (cada valor em lista com marcadores "-"; cite somente precedentes de cujo número e tese você tenha certeza; o campo é apenas sugestão e será conferido pelo usuário)
+- prazos_processuais: array de objetos [ { "data": string (ex.: "14/03/2024" ou "15 dias úteis"), "descricao": string, "tipo": "audiencia" | "prazo" | "prescricao" | "distribuicao" | "pericia" | "outro", "status": "urgente" | "alerta" | "cumprido" | "informativo", "fonte": string (fl./ID) } ] com todas as datas cruciais e prazos detectados nos autos
+- alertas: array de strings (inconsistências, documentos citados e não localizados, páginas sem texto, divergências entre peças, pedidos de outro processo juntados aos autos, qualquer ponto que o magistrado deva conferir)
+REGRAS: copie datas, nomes, números e valores exatamente como constam dos autos. Não presuma alegações nem provas. O que não está nos autos não está no mundo.`;
+
+const FICHAMENTO_SPEC = `Você receberá uma PARTE dos autos de um processo trabalhista. Produza um FICHAMENTO fiel, em texto simples, que será usado depois para redigir a sentença sem acesso ao texto integral. Regras:
+1. Registre TODOS os fatos relevantes: partes, qualificação, datas, alegações da inicial, pedidos (um por linha, com valores), teses e impugnações da defesa, documentos juntados (tipo, autor da juntada, conteúdo essencial), depoimentos (cada declaração relevante), laudos e respostas a quesitos, decisões, atas, prazos e audiências.
+2. Cada item começa pela âncora [fl. N | ID xxxxxxx] copiada dos marcadores (omita o ID se não constar).
+3. Para depoimentos, laudos, cláusulas contratuais, declarações e documentos-chave, transcreva trechos LITERAIS entre aspas duplas: cópia exata do texto dos autos, sem corrigir, sem resumir dentro das aspas.
+4. Não interprete, não valore, não invente. Se um trecho estiver ilegível ou a página sem texto, registre "[página sem texto legível]" com a âncora.
+5. Indique ao final desta parte os pontos que parecem continuar em outra parte (ex.: depoimento interrompido).
+6. Responda apenas com o fichamento.`;
+
+const PARECER_FORMATO_FICHAMENTO = `OBSERVAÇÃO: os autos completos eram extensos demais para um único envio; a seguir vão FICHAMENTOS fiéis das partes dos autos, com âncoras [fl. | ID] e trechos literais. Trate-os como a fonte dos autos.`;
+
+// Regras adicionais dinâmicas (portadas do original) conforme opções do caso
+function regrasAdicionais(opt) {
+  let s = '';
+  s += `\n\nATENÇÃO IMPERATIVA - VEDAÇÃO ABSOLUTA A MINUTA SINTÉTICA (DEVER DE PROFUNDIDADE E ROBUSTEZ):
+Esta sentença NÃO PODE ser sintética, telegráfica ou resumida. É DEVER FUNCIONAL indeclinável do magistrado proferir decisão exaustiva, com profunda valoração de cada elemento de prova constante dos autos (art. 93, IX, da CF e art. 489, § 1º, do CPC).
+Você DEVE:
+1. Para CADA pedido deduzido na inicial, analisar em detalhes a causa de pedir, os fatos articulados e a impugnação da contestação.
+2. Analisar exaustivamente cada documento dos autos, indicando expressamente os IDs e folhas do processo (ex: cartões de ponto ID. xxxxxxx, fls. y; recibos ID. aaaaaaa, fl. b; laudo pericial ID. ccccccc, fls. d-e), sempre conforme os marcadores.
+3. Transcrever trechos literais dos depoimentos das testemunhas e das partes com indicação do ID/página, confrontando contradições e demonstrando o convencimento do Juízo.
+4. Aplicar com rigor a distribuição do ônus da prova (art. 818 da CLT c/c art. 373 do CPC) e a subsunção fática aos precedentes vinculantes (STF e TST), fundamentando de forma robusta e irrefutável.
+5. Fixar detalhadamente todos os parâmetros de liquidação das parcelas deferidas (base de cálculo, divisores, reflexos específicos e deduções).`;
+
+  if (opt.tipo !== 'ed') {
+    if (opt.sumarissimo) {
+      s += `\n\nATENÇÃO IMPERATIVA: Este processo é de RITO SUMARÍSSIMO. Portanto, você DEVE substituir integralmente o relatório detalhado pelo seguinte texto padrão exato, observando a formatação estabelecida de título de capítulo em negrito e caixa alta:
+
+${STD.relatorioSumarissimoTitulo}
+
+${STD.relatorioSumarissimo}
+
+Não inclua nenhum outro resumo, histórico de andamentos ou a frase "É o relatório." após este texto dispensatório. Prossiga diretamente para a fundamentação jurídica de mérito.`;
+    }
+    if (opt.revelia) {
+      s += `\n\nATENÇÃO IMPERATIVA: Ocorreu a REVELIA da reclamada neste processo.
+Por consequência fática e jurídica, aplique as seguintes duas regras estritas:
+1. No tópico de JUSTIÇA GRATUITA, você DEVE OMITIR integralmente o segundo parágrafo ("Cabia ao reclamado o ônus de provar que o reclamante não ostentava a condição de pobreza..."). Use apenas o primeiro parágrafo:
+"${STD.gratuita1}" (Substitua ID e fl. pelos corretos, conforme os marcadores dos autos.)
+
+2. No tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivamente o seguinte texto padrão exato (não use sucumbência recíproca ou qualquer outro parágrafo):
+"${STD.honorariosTotal}"`;
+    }
+    if (opt.procedenteTotal && !opt.revelia) {
+      s += `\n\nATENÇÃO IMPERATIVA: Há PROCEDÊNCIA DE TODOS OS PEDIDOS (procedência total) da ação.
+Portanto, no tópico de HONORÁRIOS ADVOCATÍCIOS, você DEVE adotar exclusivamente o seguinte texto padrão exato (não use sucumbência recíproca ou qualquer outro parágrafo):
+"${STD.honorariosTotal}"`;
+    }
+    if (opt.improcedenteTotal) {
+      s += `\n\nATENÇÃO IMPERATIVA: Há IMPROCEDÊNCIA TOTAL da ação. Omita por completo os tópicos COMPENSAÇÃO/DEDUÇÃO, RECOLHIMENTOS PREVIDENCIÁRIOS E FISCAIS e JUROS E CORREÇÃO MONETÁRIA (na fundamentação e no dispositivo). Nos honorários use exclusivamente o texto padrão do item 6. No dispositivo use as variantes de total improcedência (custas pelo reclamante, dispensado do recolhimento; "Arquive-se.").`;
+    }
+    if (opt.marcoPrescricional) {
+      s += `\n\nDADO CALCULADO PELO SISTEMA (conferir): data do ajuizamento informada = ${opt.dataAjuizamento}; marco da prescrição quinquenal = ${opt.marcoPrescricional}. ${opt.prescricaoAplicavel === true ? 'Há indício de que o tópico PRESCRIÇÃO é cabível (requerimento da parte ou contrato anterior ao marco).' : opt.prescricaoAplicavel === false ? 'Não há indício de requerimento nem de vigência anterior ao marco: omita o tópico PRESCRIÇÃO, salvo se encontrar nos autos requerimento ou vigência anterior ao marco.' : 'Verifique nos autos se há requerimento ou vigência anterior ao marco.'}`;
+    }
+  }
+  return s;
+}
+
+const PRAZOS_TIPOS = ['audiencia', 'prazo', 'prescricao', 'distribuicao', 'pericia', 'outro'];
+
+/* ===== Lógica pura (sem DOM): prazos, marcadores, conferência da minuta, DOCX ===== */
+
+const MESES = { janeiro: 1, fevereiro: 2, marco: 3, 'março': 3, abril: 4, maio: 5, junho: 6, julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12 };
+
+// normalização "por palavras": minúsculas, sem acentos, só letras/dígitos separados por espaço
+function nw(s) {
+  return String(s || '')
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function stripMarkers(t) {
+  return String(t || '').replace(/\[\[[^\]]*\]\]/g, ' ');
+}
+
+/* ---------- Datas ---------- */
+function validDate(d, m, y) {
+  if (!(y >= 1950 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31)) return false;
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
+function pad2(n) { return String(n).padStart(2, '0'); }
+function fmtBR(o) { return `${pad2(o.d)}/${pad2(o.m)}/${o.y}`; }
+function parseBR(str) {
+  if (!str) return null;
+  const s = String(str).trim();
+  let m = s.match(/(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if (m) {
+    let y = parseInt(m[3], 10);
+    if (m[3].length === 2) y += 2000;
+    const o = { d: parseInt(m[1], 10), m: parseInt(m[2], 10), y };
+    return validDate(o.d, o.m, o.y) ? o : null;
+  }
+  m = s.match(/(\d{1,2})\s+de\s+([a-zçã]+)\s+de\s+(\d{4})/i);
+  if (m) {
+    const mes = MESES[m[2].toLowerCase()];
+    if (!mes) return null;
+    const o = { d: parseInt(m[1], 10), m: mes, y: parseInt(m[3], 10) };
+    return validDate(o.d, o.m, o.y) ? o : null;
+  }
+  return null;
+}
+// Marco da prescrição quinquenal: cinco anos antes do ajuizamento
+function marcoPrescricional(ajuizamento) {
+  const o = parseBR(ajuizamento);
+  if (!o) return null;
+  let d = o.d;
+  if (o.m === 2 && o.d === 29) d = 28;
+  return fmtBR({ d, m: o.m, y: o.y - 5 });
+}
+function cmpDate(a, b) {
+  return (a.y - b.y) || (a.m - b.m) || (a.d - b.d);
+}
+
+/* ---------- Prazos e datas (heurística por texto) ---------- */
+function extractDeadlinesFromText(text) {
+  if (!text || !text.trim()) return [];
+  text = stripMarkers(text);
+  const results = [];
+  const seen = new Set();
+  const add = (data, desc, tipo, status, origem, contexto) => {
+    const cleanData = data.trim();
+    let cleanDesc = desc.replace(/\s+/g, ' ').trim().replace(/^[-–—:;,.*#]+\s*/, '');
+    if (cleanDesc.length > 140) cleanDesc = cleanDesc.slice(0, 137) + '...';
+    const key = `${cleanData.toLowerCase()}::${tipo}::${cleanDesc.toLowerCase().slice(0, 25)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    results.push({ id: `txt-${results.length}`, data: cleanData, descricao: cleanDesc, tipo, status, origem, contexto });
+  };
+  const ctxAround = (idx, len, before, after) =>
+    text.substring(Math.max(0, idx - before), Math.min(text.length, idx + len + after)).replace(/\s+/g, ' ');
+
+  // 1. prazos em dias/horas
+  const prazoRe = /(?:no\s+prazo\s+(?:legal\s+)?de\s+|prazo\s+(?:de\s+)?|com\s+prazo\s+de\s+)(\d{1,3})\s*(dias\s+úteis|dias\s+uteis|dias|dia|horas|hora)(?:[^.\n;]{0,120})/gi;
+  let m;
+  while ((m = prazoRe.exec(text)) !== null) {
+    const dur = `${m[1]} ${m[2]}`;
+    const ctx = ctxAround(m.index, m[0].length, 60, 90);
+    const lc = ctx.toLowerCase();
+    let tipo = 'prazo', status = 'alerta', desc;
+    if (/contesta|resposta/.test(lc)) { desc = `Prazo de ${dur} para apresentação de Contestação`; status = 'urgente'; }
+    else if (/manifest/.test(lc)) { desc = `Prazo de ${dur} para Manifestação sobre Documentos/Laudo`; }
+    else if (/recurs|recorr|ordinário|ordinario/.test(lc)) { desc = `Prazo de ${dur} para Interposição de Recurso`; status = 'urgente'; }
+    else if (/emend/.test(lc)) { desc = `Prazo de ${dur} para Emenda à Petição Inicial`; }
+    else if (/raz[õo]es\s+finais/.test(lc)) { desc = `Prazo de ${dur} para Razões Finais`; }
+    else if (/laudo|per[ií]cia|quesitos/.test(lc)) { desc = `Prazo de ${dur} relativo à Prova Pericial`; tipo = 'pericia'; }
+    else { desc = `Prazo processual concedido de ${dur}`; }
+    add(dur, desc, tipo, status, 'Texto dos autos', ctx);
+  }
+
+  // classifica a data pela palavra-chave MAIS PRÓXIMA antes dela (na mesma frase); se não houver, olha logo depois
+  const CATS = [
+    { k: 'audiencia', re: /audi[êe]ncia|sess[ãa]o/g },
+    { k: 'distribuicao', re: /ajuizad|ajuizamento|distribui[çc][ãa]o|distribu[ií]d|protocolad/g },
+    { k: 'prescricao', re: /prescri|bienal|quinquenal/g },
+    { k: 'pericia', re: /per[ií]cia|laudo\s+pericial|vistoria|perito/g },
+    { k: 'admissao', re: /admiss[ãa]o|admitid|contratad|in[ií]cio\s+do\s+pacto/g },
+    { k: 'rescisao', re: /demiss[ãa]o|rescis[ãa]o|afastamento|despedida|dispensad/g },
+    { k: 'intimacao', re: /notifica|intima|ci[êe]ncia/g }
+  ];
+  const lastIdx = (re, str) => { let last = -1, mm; re.lastIndex = 0; while ((mm = re.exec(str)) !== null) last = mm.index; return last; };
+  const firstIdx = (re, str) => { re.lastIndex = 0; const mm = re.exec(str); return mm ? mm.index : -1; };
+  const classify = (raw, idx, len) => {
+    const sStart = Math.max(text.lastIndexOf('. ', idx) + 1, idx - 140, 0);
+    const before = text.slice(sStart, idx).toLowerCase();
+    let after = text.slice(idx + len, Math.min(text.length, idx + len + 70)).toLowerCase();
+    const cut = after.indexOf('. '); if (cut >= 0) after = after.slice(0, cut);
+    const ctx = ctxAround(idx, len, 90, 90);
+    const lc = (before + ' ' + after);
+    let best = null, bestPos = -1;
+    for (const c of CATS) { const p = lastIdx(c.re, before); if (p > bestPos) { bestPos = p; best = c.k; } }
+    if (!best) {
+      let bestAfter = 1e9;
+      for (const c of CATS) { const p = firstIdx(c.re, after); if (p >= 0 && p < bestAfter) { bestAfter = p; best = c.k; } }
+    }
+    if (best === 'audiencia') {
+      let desc = 'Audiência Trabalhista designada';
+      if (/instru[çc][ãa]o/.test(lc)) desc = 'Audiência de Instrução e Julgamento';
+      else if (/concilia[çc][ãa]o|inicial/.test(lc)) desc = 'Audiência Inicial de Conciliação';
+      else if (/\buna\b/.test(lc)) desc = 'Audiência Una designada';
+      add(raw, desc, 'audiencia', 'urgente', 'Autos', ctx);
+    } else if (best === 'distribuicao') add(raw, 'Distribuição / Ajuizamento da Reclamatória Trabalhista', 'distribuicao', 'cumprido', 'Petição Inicial', ctx);
+    else if (best === 'prescricao') add(raw, `Marco da Prescrição ${/quinquenal/.test(lc) ? 'Quinquenal' : /bienal/.test(lc) ? 'Bienal' : 'Processual'}`, 'prescricao', 'informativo', 'Autos', ctx);
+    else if (best === 'pericia') add(raw, 'Diligência Pericial / Vistoria', 'pericia', 'alerta', 'Autos', ctx);
+    else if (best === 'admissao') add(raw, 'Data de Admissão do Trabalhador', 'outro', 'informativo', 'Contrato de Trabalho', ctx);
+    else if (best === 'rescisao') add(raw, 'Data da Rescisão / Término Contratual', 'outro', 'informativo', 'Contrato de Trabalho', ctx);
+    else if (best === 'intimacao') add(raw, 'Intimação / Notificação Processual', 'prazo', 'alerta', 'Notificação', ctx);
+  };
+
+  // 2. datas numéricas
+  const dateRe = /\b(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})(?:\s+(?:às|as)\s+(\d{1,2}[:h]\d{2}))?\b/gi;
+  while ((m = dateRe.exec(text)) !== null) {
+    const y = m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10);
+    if (!validDate(parseInt(m[1], 10), parseInt(m[2], 10), y)) continue;
+    const hora = m[4] ? ` às ${m[4].replace('h', ':')}` : '';
+    const fmt = `${pad2(m[1])}/${pad2(m[2])}/${y}${hora}`;
+    classify(fmt, m.index, m[0].length);
+  }
+  // 3. datas por extenso
+  const extRe = /\b(\d{1,2})\s+de\s+(janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\s+de\s+(\d{4})\b/gi;
+  while ((m = extRe.exec(text)) !== null) {
+    if (!parseBR(m[0])) continue;
+    classify(m[0], m.index, m[0].length);
+  }
+
+  const peso = { urgente: 0, alerta: 1, informativo: 2, cumprido: 3 };
+  return results.sort((a, b) => (peso[a.status] ?? 9) - (peso[b.status] ?? 9));
+}
+
+/* ---------- Marcadores nos autos ---------- */
+function detectIds(pageText) {
+  const ids = new Set();
+  const re = /\b(?:id|ID|Id|Num|NUM)\.?\s*[:\-]?\s*([0-9a-z]{7})\b/g;
+  let m;
+  while ((m = re.exec(String(pageText || ''))) !== null) {
+    const v = m[1];
+    // sete letras com 3 ou mais vogais costumam ser palavras comuns, não identificadores
+    if (/^[a-z]{7}$/.test(v) && (v.match(/[aeiou]/g) || []).length >= 3) continue;
+    ids.add(v);
+  }
+  return [...ids];
+}
+
+// file: { name, kind: 'pdf'|'texto', pages: [{n, text}] }   (texto: blocos numerados)
+function fileToBlocks(file) {
+  const out = [`[[ARQUIVO: ${file.name}]]`];
+  for (const p of file.pages) {
+    const ids = detectIds(p.text);
+    const head = file.kind === 'pdf' ? `[[fl. ${p.n}]]` : `[[bloco ${p.n}]]`;
+    const idl = ids.length ? `\n[[IDs nesta fl.: ${ids.join(', ')}]]` : '';
+    const body = p.text && p.text.trim() ? p.text.trim() : '[página sem texto legível]';
+    out.push(`${head}${idl}\n${body}`);
+  }
+  return out;
+}
+function allBlocks(files) {
+  return files.flatMap(fileToBlocks);
+}
+function autosText(files) {
+  return allBlocks(files).join('\n');
+}
+function chunkBlocks(blocks, maxChars) {
+  const chunks = [];
+  let cur = [];
+  let len = 0;
+  const push = () => { if (cur.length) { chunks.push(cur.join('\n')); cur = []; len = 0; } };
+  for (let b of blocks) {
+    while (b.length > maxChars) {
+      push();
+      chunks.push(b.slice(0, maxChars));
+      b = b.slice(maxChars);
+    }
+    if (len + b.length + 1 > maxChars) push();
+    cur.push(b);
+    len += b.length + 1;
+  }
+  push();
+  return chunks;
+}
+function idIndex(files) {
+  const map = new Map();
+  let maxPage = 0;
+  let emptyPages = 0;
+  for (const f of files) {
+    for (const p of f.pages) {
+      if (f.kind === 'pdf') maxPage = Math.max(maxPage, p.n);
+      if (!p.text || !p.text.trim()) emptyPages++;
+      for (const id of detectIds(p.text)) {
+        if (!map.has(id)) map.set(id, new Set());
+        map.get(id).add(p.n);
+      }
+    }
+  }
+  return { ids: map, maxPage, emptyPages };
+}
+function byteLen(s) {
+  return (typeof TextEncoder !== 'undefined') ? new TextEncoder().encode(s).length : Buffer.byteLength(s, 'utf8');
+}
+
+/* ---------- Normalização da minuta ---------- */
+function cleanDraft(text) {
+  let t = String(text || '').replace(/\r/g, '').trim();
+  const i = t.lastIndexOf('Nada mais.');
+  if (i !== -1) t = t.substring(0, i + 'Nada mais.'.length).trim();
+  return t;
+}
+function ensureSentencaHeading(text, tipo) {
+  if (!text) return text;
+  if (tipo === 'ed') return text;
+  const rel = /(?:\n|^)(?:\s*[*#_-]*\s*)(?:I\s*[-–—.]\s*)?RELATÓRIO:?/i;
+  const m = text.match(rel);
+  const has = (s) => /SENTEN[ÇC]A/i.test(s);
+  if (m && m.index !== undefined) {
+    const before = text.substring(0, m.index);
+    if (!has(before)) return before + '\n\n**SENTENÇA**\n\n' + text.substring(m.index).replace(/^\n+/, '');
+  } else if (!has(text)) {
+    const vt = text.match(/(?:VT|VARA DO TRABALHO):[^\n]+/i);
+    if (vt && vt.index !== undefined) {
+      const end = vt.index + vt[0].length;
+      return text.substring(0, end) + '\n\n**SENTENÇA**\n\n' + text.substring(end);
+    }
+    return '**SENTENÇA**\n\n' + text;
+  }
+  return text;
+}
+
+/* ---------- Extração de citações normativas ---------- */
+function extractCitations(draft) {
+  const found = new Map();
+  const put = (label, cat) => { if (!found.has(label)) found.set(label, { label, cat, n: 0 }); found.get(label).n++; };
+  let m;
+  const reS = /S[úu]mulas?\s+(?:n[º°o.]*\s*)?(\d+)(?:\s+(?:do|da)\s+(TST|STF|STJ|TRT\s?\d+))?/gi;
+  while ((m = reS.exec(draft)) !== null) put(`Súmula ${m[1]}${m[2] ? ' do ' + m[2].replace(/\s/g, '').toUpperCase() : ''}`, 'Súmula');
+  const reOJ = /\bOJ\s*(?:n[º°o.]*\s*)?(\d+)\s*(?:da\s+)?(SDI-?\s?1|SBDI-?\s?1|SDI-?\s?2|SBDI-?\s?2|SDC)?/gi;
+  while ((m = reOJ.exec(draft)) !== null) put(`OJ ${m[1]}${m[2] ? ' da ' + m[2].replace(/\s/g, '').toUpperCase() : ''}`, 'Orientação Jurisprudencial');
+  const reT = /\bTema\s+(?:n[º°o.]*\s*)?(\d+)(?:\s+(?:do|da)\s+(TST|STF|STJ))?/g;
+  while ((m = reT.exec(draft)) !== null) put(`Tema ${m[1]}${m[2] ? ' do ' + m[2] : ''}`, 'Tema vinculante');
+  const reA = /\b(ADI|ADPF|ADC|ADO)\s*(?:n[º°o.]*\s*)?(\d+)/g;
+  while ((m = reA.exec(draft)) !== null) put(`${m[1]} ${m[2]}`, 'Controle concentrado');
+  const reL = /\bLei\s+(Complementar\s+)?n[.º°o]*\s*([\d.]+)\s*\/\s*(\d{4})/gi;
+  while ((m = reL.exec(draft)) !== null) put(`Lei ${m[1] ? 'Complementar ' : ''}${m[2]}/${m[3]}`, 'Lei');
+  const reArt = /\bart(?:igos?|s?\.)\s*(\d+[A-Za-z]?(?:-[A-Z])?)(?:[^.;\n]{0,60}?)\s+(?:do|da)\s+(CLT|CPC|CF|CC|CP|CPP)\b/gi;
+  while ((m = reArt.exec(draft)) !== null) put(`art. ${m[1]} da ${m[2].toUpperCase()}`, 'Artigo');
+  return [...found.values()];
+}
+
+/* ---------- Dinheiro ---------- */
+function parseMoney(s) {
+  const n = parseFloat(String(s).replace(/\./g, '').replace(',', '.'));
+  return isNaN(n) ? null : n;
+}
+function fmtMoney(n) {
+  return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/* ---------- Conferência automática da minuta ---------- */
+function quoteSupport(quote, corpusNw) {
+  const w = nw(quote).split(' ').filter(Boolean);
+  if (w.length < 8) return 1;
+  const whole = w.join(' ');
+  if (corpusNw.includes(whole)) return 1;
+  const size = 6;
+  let ok = 0, tot = 0;
+  for (let i = 0; i + size <= w.length; i += 3) {
+    tot++;
+    if (corpusNw.includes(w.slice(i, i + size).join(' '))) ok++;
+  }
+  return tot ? ok / tot : 1;
+}
+
+function headingOf(line) {
+  const t = line.trim();
+  if (/^#{1,6}\s+/.test(t)) return t.replace(/^#{1,6}\s+/, '').replace(/\*\*/g, '').replace(/:$/, '').trim();
+  const m = t.match(/^\*\*([^*].*?)\*\*:?$/);
+  return m ? m[1].trim() : null;
+}
+
+const RANK = [
+  { k: 'prescricao', re: /^PRESCRI/, rank: 1 },
+  { k: 'danos', re: /DANOS?\s+MORAIS?|DANO\s+MORAL/, rank: 3 },
+  { k: 'compensacao', re: /^COMPENSA/, rank: 4 },
+  { k: 'recolhimentos', re: /^RECOLHIMENTOS?/, rank: 5 },
+  { k: 'honadv', re: /^HONOR[ÁA]RIOS\s+ADVOCAT|^HONOR[ÁA]RIOS\s+DE\s+SUCUMB|^JUSTI[ÇC]A\s+GRATUITA|^GRATUIDADE/, rank: 6 },
+  { k: 'honper', re: /^HONOR[ÁA]RIOS\s+PERICIAIS/, rank: 7 },
+  { k: 'juros', re: /^JUROS/, rank: 8 }
+];
+
+// citações entre aspas retas (pareadas por linha), aspas curvas e itálico com asterisco
+function extractQuotes(draft) {
+  const out = [];
+  for (const line of String(draft).split('\n')) {
+    const idx = [];
+    for (let i = 0; i < line.length; i++) if (line[i] === '"') idx.push(i);
+    if (idx.length % 2 === 0) {
+      for (let k = 0; k < idx.length; k += 2) {
+        const q = line.slice(idx[k] + 1, idx[k + 1]);
+        if (q.length >= 40) out.push(q);
+      }
+    }
+    let m;
+    const rc = /“([^”\n]{40,})”/g;
+    while ((m = rc.exec(line)) !== null) out.push(m[1]);
+    const ri = /(?<![*\w])\*(?!\*)([^*\n]{40,}?)(?<!\*)\*(?![*\w])/g;
+    while ((m = ri.exec(line)) !== null) out.push(m[1]);
+  }
+  return out;
+}
+
+function checkDraft(draftRaw, ctx) {
+  ctx = ctx || {};
+  const tipo = ctx.tipo || 'standard';
+  const flags = ctx.flags || {};
+  const an = ctx.analysis || null;
+  const items = [];
+  const add = (nivel, regra, detalhe) => items.push({ nivel, regra, detalhe });
+  const draft = String(draftRaw || '');
+  if (!draft.trim()) return { items, citacoes: [] };
+  const lines = draft.replace(/\r/g, '').split('\n');
+  const nonEmpty = lines.map((l, i) => ({ l, i })).filter(x => x.l.trim());
+  const dnw = nw(draft);
+
+  const findIdx = (re) => lines.findIndex(l => re.test(l.replace(/[*#]/g, '').trim()));
+  const iRel = findIdx(/^(?:I\s*[-–—.]?\s*)?RELAT[ÓO]RIO:?$/i);
+  const iFun = findIdx(/^(?:II\s*[-–—.]?\s*)?FUNDAMENTA[ÇC][ÃA]O:?$/i);
+  const iDis = findIdx(/^(?:III\s*[-–—.]?\s*)?DISPOSITIVO:?$/i);
+
+  // 1. Cabeçalho
+  const first = nonEmpty.slice(0, 12).map(x => x.l.replace(/[*#]/g, '').trim());
+  if (tipo === 'ed') {
+    if (!/^ATOrd\b/i.test(first[0] || '')) add('erro', 'Cabeçalho', 'A minuta de embargos deve começar por "ATOrd [número do processo]".');
+    if (!first.some(l => /^SENTEN[ÇC]A DE EMBARGOS DE DECLARA[ÇC][ÃA]O$/i.test(l))) add('erro', 'Cabeçalho', 'Falta o título "SENTENÇA DE EMBARGOS DE DECLARAÇÃO".');
+    else add('ok', 'Cabeçalho', 'Cabeçalho de embargos de declaração presente.');
+  } else {
+    const okProc = /^PROCESSO\s+N[ºo°]/i.test(first[0] || '');
+    const okRecl = first.some(l => /^RECLAMANTE:/i.test(l));
+    const okRecd = first.some(l => /^RECLAMADAS?(\(S\))?:/i.test(l));
+    const okVt = first.some(l => /^VT:/i.test(l));
+    const okSent = first.some(l => /^SENTEN[ÇC]A$/i.test(l));
+    const falta = [!okProc && 'PROCESSO Nº', !okRecl && 'RECLAMANTE', !okRecd && 'RECLAMADA(S)', !okVt && 'VT', !okSent && '"SENTENÇA" isolada'].filter(Boolean);
+    if (falta.length) add('erro', 'Cabeçalho', `Cabeçalho padrão incompleto. Falta: ${falta.join(', ')}.`);
+    else add('ok', 'Cabeçalho', 'Cabeçalho padrão completo (processo, reclamante, reclamada, VT e "SENTENÇA").');
+  }
+
+  // 2. Capítulos
+  if (iRel < 0 || iFun < 0 || iDis < 0 || !(iRel < iFun && iFun < iDis)) {
+    const f = [iRel < 0 && 'I - RELATÓRIO', iFun < 0 && 'II - FUNDAMENTAÇÃO', iDis < 0 && 'III - DISPOSITIVO'].filter(Boolean);
+    add('erro', 'Estrutura', f.length ? `Capítulo(s) ausente(s): ${f.join(', ')}.` : 'Os capítulos não estão na ordem Relatório, Fundamentação, Dispositivo.');
+  } else add('ok', 'Estrutura', 'Relatório, Fundamentação e Dispositivo presentes e em ordem.');
+
+  const relTxt = (iRel >= 0 && iFun > iRel) ? lines.slice(iRel + 1, iFun).join('\n') : '';
+  const funLines = (iFun >= 0) ? lines.slice(iFun + 1, iDis > iFun ? iDis : lines.length) : [];
+  const funTxt = funLines.join('\n');
+  const disTxt = (iDis >= 0) ? lines.slice(iDis).join('\n') : '';
+  const disNw = nw(disTxt);
+
+  // resultado
+  const improDetect = /julg\w*\s+improcedentes?\b/i.test(disTxt) && !/parcialmente|em\s+parte/i.test(disTxt.split('\n').filter(l => /julg\w*\s+improcedentes?/i.test(l)).join(' '));
+  const improTotal = !!flags.improcedenteTotal || improDetect;
+
+  // 3. Relatório
+  if (tipo !== 'ed' && iRel >= 0 && iFun > iRel) {
+    const rnw = nw(relTxt);
+    const temDispensa = rnw.includes(nw(STD.relatorioSumarissimo));
+    if (flags.sumarissimo) {
+      if (!temDispensa) add('erro', 'Relatório (rito sumaríssimo)', 'O relatório deve ser substituído pelo texto padrão de dispensa (art. 852-I, "caput", da CLT).');
+      else if (/\bo\s+relatorio\b/.test(rnw.replace(nw(STD.relatorioSumarissimo), '')) || /e o relatorio/.test(rnw)) add('erro', 'Relatório (rito sumaríssimo)', 'Não deve constar "É o relatório." após o texto de dispensa.');
+      else if (rnw.length > nw(STD.relatorioSumarissimo).length + 60) add('erro', 'Relatório (rito sumaríssimo)', 'Há resumo ou histórico além do texto padrão de dispensa.');
+      else add('ok', 'Relatório (rito sumaríssimo)', 'Texto padrão de dispensa aplicado.');
+    } else {
+      if (temDispensa) add('erro', 'Relatório', 'O texto de dispensa do relatório só vale para o rito sumaríssimo, mas a opção não está marcada.');
+      else if (!/e o relatorio\s*$/.test(rnw)) add('erro', 'Relatório', 'O relatório do rito ordinário deve terminar com "É o relatório.".');
+      else add('ok', 'Relatório', 'Relatório do rito ordinário encerrado com "É o relatório.".');
+    }
+  }
+
+  // 4. Títulos e subtítulos
+  if (tipo !== 'ed' && iFun >= 0) {
+    const heads = [];
+    funLines.forEach((l, k) => {
+      const h = headingOf(l);
+      if (h && !/^[-•*]\s/.test(l.trim())) heads.push({ h, line: iFun + 1 + k });
+    });
+    const probs = [];
+    for (const { h } of heads) {
+      if (h !== h.toUpperCase()) probs.push(`"${h}" não está em CAIXA ALTA`);
+      if (/^(\d+[.)]|[A-Z][.)]\s|TEMA\s+(UM|DOIS|TR[ÊE]S|\d))/i.test(h.replace(/^\s+/, '')) && !/^[IVX]+\s*[-–—]/.test(h)) probs.push(`"${h}" está numerado`);
+    }
+    // títulos em caixa alta sem negrito
+    funLines.forEach((l) => {
+      const t = l.trim();
+      if (t.length >= 8 && t.length < 90 && t === t.toUpperCase() && /[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{4}/.test(t) && !/[.;]$/.test(t) && !/^\*\*|^#|^\[\[|^[-•*]/.test(t) && !/\d{3}/.test(t)) probs.push(`"${t}" parece título sem negrito`);
+    });
+    if (probs.length) add('erro', 'Títulos e subtítulos', probs.slice(0, 6).join('; ') + (probs.length > 6 ? '; ...' : '') + '.');
+    else if (heads.length) add('ok', 'Títulos e subtítulos', `${heads.length} título(s) em CAIXA ALTA e negrito, sem numeração.`);
+    else add('aviso', 'Títulos e subtítulos', 'Nenhum título de tópico (negrito em caixa alta) foi encontrado na fundamentação.');
+
+    // 5. Ordem dos tópicos
+    let last = 0, lastName = '';
+    const ordemProbs = [];
+    const presentes = {};
+    for (const { h } of heads) {
+      const hu = h.toUpperCase();
+      const r = RANK.find(x => x.re.test(hu));
+      if (r) {
+        presentes[r.k] = true;
+        if (r.rank < last) ordemProbs.push(`"${h}" aparece depois de "${lastName}"`);
+        else { last = r.rank; lastName = h; }
+      } else if (last >= 4 && !/^(ADMISSIBILIDADE|PRELIMINAR)/.test(hu)) {
+        ordemProbs.push(`o tema "${h}" aparece depois de "${lastName}" (temas de mérito vêm antes de compensação, recolhimentos, honorários e juros)`);
+      }
+    }
+    if (ordemProbs.length) add('erro', 'Ordem dos tópicos', ordemProbs.slice(0, 4).join('; ') + '.');
+    else add('ok', 'Ordem dos tópicos', 'Sequência dos tópicos de acordo com a ordem obrigatória.');
+
+    // 6/7. Improcedência total x capítulos e textos padrão
+    const funNw = nw(funTxt + '\n' + disTxt);
+    if (improTotal) {
+      const indevidos = ['compensacao', 'recolhimentos', 'juros'].filter(k => presentes[k]);
+      if (indevidos.length) add('erro', 'Improcedência total', `Capítulo(s) indevido(s) em caso de improcedência total: ${indevidos.join(', ')}.`);
+      else add('ok', 'Improcedência total', 'Sem os capítulos de compensação, recolhimentos e juros.');
+      if (!funNw.includes(nw(STD.honorariosImprocedencia))) add('erro', 'Honorários (improcedência)', 'Falta o texto padrão de honorários para total improcedência.');
+      if (!/arquive-se/i.test(disTxt)) add('erro', 'Dispositivo', 'Na improcedência total o dispositivo deve terminar com "Arquive-se.".');
+      if (!/custas pelo reclamante/i.test(disTxt)) add('erro', 'Dispositivo', 'Na improcedência total: "Custas pelo reclamante ... dispensado do recolhimento".');
+    } else {
+      if (presentes.compensacao && !funNw.includes(nw(STD.compensacao))) add('erro', 'Compensação/dedução', 'O texto padrão foi alterado.');
+      if (presentes.recolhimentos) {
+        const falt = STD.recolhimentos.map((p, i) => funNw.includes(nw(p)) ? null : i + 1).filter(Boolean);
+        if (falt.length) add('erro', 'Recolhimentos previdenciários e fiscais', `Texto padrão alterado ou incompleto (parágrafo(s) ${falt.join(', ')}).`);
+      }
+      if (presentes.juros && !funNw.includes(nw(STD.juros))) add('erro', 'Juros e correção monetária', 'O texto padrão foi alterado.');
+      const faltam = [!presentes.compensacao && 'COMPENSAÇÃO/DEDUÇÃO', !presentes.recolhimentos && 'RECOLHIMENTOS PREVIDENCIÁRIOS E FISCAIS', !presentes.juros && 'JUROS E CORREÇÃO MONETÁRIA'].filter(Boolean);
+      if (faltam.length) add('aviso', 'Capítulos obrigatórios', `Capítulo(s) ausente(s) (obrigatórios quando há condenação): ${faltam.join(', ')}.`);
+      // honorários
+      const hasTotal = funNw.includes(nw(STD.honorariosTotal));
+      const hasRec = STD.honorariosReciproca.every(p => funNw.includes(nw(p)));
+      if (flags.revelia || flags.procedenteTotal) {
+        if (!hasTotal) add('erro', 'Honorários advocatícios', 'Com revelia ou procedência total, usar exclusivamente o texto padrão de 10% sobre a condenação.');
+        else if (/sucumb[êe]ncia\s+rec[íi]proca/i.test(funTxt + disTxt)) add('erro', 'Honorários advocatícios', 'Há menção a sucumbência recíproca, incompatível com revelia/procedência total.');
+        else add('ok', 'Honorários advocatícios', 'Texto padrão (revelia/procedência total) aplicado.');
+      } else if (!hasTotal && !hasRec) {
+        add('erro', 'Honorários advocatícios', 'Nenhum dos textos padrão de honorários (item 5) foi aplicado literalmente.');
+      } else add('ok', 'Honorários advocatícios', 'Texto padrão de honorários aplicado.');
+    }
+    // perícia
+    if (presentes.honper && !(nw(funTxt).includes(nw(STD.periciaA)) || nw(funTxt).includes(nw(STD.periciaB)))) add('erro', 'Honorários periciais', 'Nenhuma das opções do texto padrão (A ou B) foi aplicada literalmente.');
+    // justiça gratuita
+    if (/benef[íi]cio da justi[çc]a gratuita/i.test(funTxt + disTxt)) {
+      const g1 = nw(STD.gratuita1).split(' (id')[0];
+      if (!nw(funTxt).includes(g1.slice(0, 140))) add('erro', 'Justiça gratuita', 'O primeiro parágrafo padrão da justiça gratuita foi alterado.');
+      if (flags.revelia && /Cabia ao reclamado o ônus de provar que o reclamante não ostentava/i.test(funTxt)) add('erro', 'Justiça gratuita', 'Com revelia da reclamada, o segundo parágrafo ("Cabia ao reclamado...") deve ser omitido.');
+    }
+    // prescrição
+    if (presentes.prescricao) {
+      const pre = nw(STD.prescricao).split(' antes de ')[0];
+      if (!nw(funTxt).includes(pre)) add('erro', 'Prescrição', 'O texto padrão da prescrição quinquenal foi alterado.');
+      const mm = funTxt.match(/exigibilidade\s+verificou-se\s+antes\s+de\s+([^,]+),/i);
+      if (mm && ctx.marcoPrescricional) {
+        const d = parseBR(mm[1]);
+        if (!d) add('aviso', 'Prescrição', `Data da prescrição não reconhecida: "${mm[1].trim()}".`);
+        else if (fmtBR(d) !== ctx.marcoPrescricional) add('erro', 'Prescrição', `A data pronunciada (${fmtBR(d)}) difere do marco calculado (${ctx.marcoPrescricional}), cinco anos antes do ajuizamento.`);
+        else add('ok', 'Prescrição', `Marco ${ctx.marcoPrescricional} confere com o ajuizamento (${ctx.dataAjuizamento}).`);
+      }
+      if (an && an.prescricao_requerida === false && ctx.marcoPrescricional && an.data_admissao) {
+        const adm = parseBR(an.data_admissao), mar = parseBR(ctx.marcoPrescricional);
+        if (adm && mar && cmpDate(adm, mar) >= 0) add('aviso', 'Prescrição', 'Os dados extraídos indicam que não houve requerimento e que o contrato começou depois do marco; o tópico pode ser indevido.');
+      }
+    } else if (an && an.prescricao_requerida === true) {
+      add('aviso', 'Prescrição', 'Os dados extraídos indicam requerimento de prescrição, mas a minuta não tem o tópico PRESCRIÇÃO.');
+    }
+  }
+
+  // 8. Dispositivo
+  if (iDis >= 0) {
+    const dl = lines.slice(iDis + 1);
+    const badBullets = dl.filter(l => /^\s*[•·▪●◦‣–—]\s/.test(l) || /^\s*\*\s(?!\*)/.test(l));
+    if (badBullets.length) add('erro', 'Dispositivo', 'Listas do dispositivo devem usar somente traço (-); foram encontrados outros marcadores.');
+    const lastLine = nonEmpty[nonEmpty.length - 1]?.l.trim() || '';
+    if (lastLine !== 'Nada mais.') add('erro', 'Dispositivo', 'A última linha deve ser exatamente "Nada mais.".');
+    if (tipo !== 'ed') {
+      if (!/Ante o exposto, nos termos da fundamenta[çc][ãa]o, que passa a fazer parte deste dispositivo/i.test(disTxt)) add('aviso', 'Dispositivo', 'Falta a abertura padrão "Ante o exposto, nos termos da fundamentação...".');
+      if (!/Intimem-se/i.test(disTxt)) add('aviso', 'Dispositivo', 'Falta "Intimem-se as partes".');
+      if (!improTotal) {
+        if (!/Custas pela reclamada/i.test(disTxt)) add('aviso', 'Dispositivo', 'Falta a linha de custas pela reclamada.');
+        if (!/Cumpra-se, ap[óo]s o tr[âa]nsito em julgado/i.test(disTxt)) add('aviso', 'Dispositivo', 'Falta "Cumpra-se, após o trânsito em julgado.".');
+        if (!/Autorizo a dedu[çc][ãa]o dos valores pagos a id[êe]ntico t[íi]tulo/i.test(disTxt)) add('aviso', 'Dispositivo', 'Falta "Autorizo a dedução dos valores pagos a idêntico título...".');
+        if (!/recolher as contribui[çc][õo]es previdenci[áa]rias e fiscais/i.test(disTxt)) add('aviso', 'Dispositivo', 'Falta o parágrafo sobre recolhimento das contribuições previdenciárias e fiscais.');
+      }
+      // custas = 2%
+      const c = disTxt.match(/Custas\s+pel[oa]\s+(?:reclamante|reclamada)[^$]*\$\s*([\d.]+,\d{2})[^$]*\$\s*([\d.]+,\d{2})/i);
+      if (c) {
+        const v = parseMoney(c[1]), base = parseMoney(c[2]);
+        if (v != null && base != null) {
+          const esp = Math.round(base * 0.02 * 100) / 100;
+          if (Math.abs(v - esp) > 0.011 && Math.abs(v - 10.64) > 0.011) add('aviso', 'Custas', `Custas de R$ ${c[1]} sobre base de R$ ${c[2]}: 2% seriam R$ ${fmtMoney(esp)} (art. 789 da CLT; confira mínimo e teto).`);
+          else add('ok', 'Custas', 'Custas conferem com 2% da base informada.');
+        }
+      }
+    }
+  }
+
+  // 9. Lacunas não preenchidas
+  const lac = [];
+  const lacRe = /\[([^\]\n]{0,160})\]/g;
+  let m;
+  while ((m = lacRe.exec(draft)) !== null) {
+    const inside = m[1];
+    if (/^ALERTA DE INCONSIST/i.test(inside)) continue;
+    if (/XX|DATA|Parcela|Obriga[çc][ãa]o|NOME DO|SE HOUVER|SE FOR|OU SE|INCLUIR|Inserir|PARCIALMENTE|Reclamante\/Reclamada|omiss[õo]es|sem atribui|sem imprimir/i.test(inside)) lac.push(m[0]);
+  }
+  if (/\bx{7}\b/i.test(draft)) lac.push('ID "xxxxxxx"');
+  if (lac.length) add('erro', 'Lacunas do modelo', `Há trechos de modelo não preenchidos: ${lac.slice(0, 4).join(' | ')}${lac.length > 4 ? ' ...' : ''}`);
+  else add('ok', 'Lacunas do modelo', 'Nenhuma lacuna [ ] do modelo ficou sem preencher.');
+
+  // 10. Alertas de inconsistência
+  const alerts = draft.match(/\[ALERTA DE INCONSIST[^\]]*\]/gi) || [];
+  alerts.forEach(a => add('aviso', 'Alerta de inconsistência', a.replace(/^\[|\]$/g, '')));
+
+  // 11. Gerundismo
+  const ger = draft.match(/\b(?:vou|vamos|irei|iremos)\s+estar\s+\w+ndo\b/gi);
+  if (ger) add('aviso', 'Linguagem', `Gerundismo: "${ger[0]}".`);
+
+  // 12. IDs e folhas
+  if (ctx.autos) {
+    const ix = ctx.autos;
+    if (ix.ids.size > 0) {
+      const cited = new Set();
+      const reId = /\bID\.?\s*[:\-]?\s*([0-9a-z]{7})\b/g;
+      while ((m = reId.exec(draft)) !== null) { if (!/^x{7}$/i.test(m[1])) cited.add(m[1]); }
+      const missing = [...cited].filter(id => !ix.ids.has(id));
+      if (missing.length) add('erro', 'IDs citados', `ID(s) que não aparecem nos autos enviados: ${missing.join(', ')}. Possível invenção; confira antes de usar.`);
+      else if (cited.size) add('ok', 'IDs citados', `${cited.size} ID(s) citado(s), todos localizados nos autos.`);
+      else add('aviso', 'IDs citados', 'A minuta não cita nenhum ID de documento (formato "ID. xxxxxxx, fl. N").');
+    } else {
+      add('aviso', 'IDs citados', 'Não foi possível detectar IDs nos autos enviados; a conferência de IDs não foi feita.');
+    }
+    if (ix.maxPage > 0) {
+      const over = [];
+      const reFl = /\bfls?\.\s*(\d+)(?:\s*[-–a]\s*(\d+))?/gi;
+      while ((m = reFl.exec(draft)) !== null) {
+        const a = parseInt(m[1], 10), b = m[2] ? parseInt(m[2], 10) : a;
+        if (a > ix.maxPage || b > ix.maxPage) over.push(m[0]);
+      }
+      if (over.length) add('erro', 'Folhas citadas', `Folha(s) além do total de páginas dos PDFs (${ix.maxPage}): ${[...new Set(over)].slice(0, 6).join(', ')}.`);
+    }
+  }
+
+  // 13. Citações literais, valores, nomes
+  if (ctx.corpusNw) {
+    const quotes = extractQuotes(draft);
+    const std = nw(Object.values(STD).flat().join(' '));
+    const sem = [];
+    for (const q of quotes.slice(0, 60)) {
+      if (std.includes(nw(q))) continue;
+      const s = quoteSupport(q, ctx.corpusNw);
+      if (s < 0.7) sem.push(q.length > 90 ? q.slice(0, 87) + '...' : q);
+    }
+    if (sem.length) add('erro', 'Citações literais', `${sem.length} citação(ões) entre aspas/itálico não localizada(s) nos autos: ${sem.slice(0, 3).map(s => `"${s}"`).join(' | ')}${sem.length > 3 ? ' ...' : ''}`);
+    else if (quotes.length) add('ok', 'Citações literais', `${quotes.length} citação(ões) literal(is) localizada(s) nos autos.`);
+
+    const amtRe = /R\$\s*([\d.]+,\d{2})/g;
+    const stdAmts = new Set(['3.000,00', '1.500,00']);
+    const corpusAmts = new Set((ctx.corpusRaw || '').match(/\d{1,3}(?:\.\d{3})*,\d{2}/g) || []);
+    const novos = new Set();
+    while ((m = amtRe.exec(draft)) !== null) {
+      if (!corpusAmts.has(m[1]) && !stdAmts.has(m[1])) novos.add(m[1]);
+    }
+    if (novos.size) add('aviso', 'Valores', `Valores em R$ que não constam literalmente dos autos nem das diretrizes (podem ser cálculo; confira): ${[...novos].slice(0, 8).join(', ')}.`);
+  }
+  if (an) {
+    const h = nw(first.join(' '));
+    if (tipo !== 'ed') {
+      if (an.reclamante && !h.includes(nw(an.reclamante).split(' ').slice(0, 2).join(' '))) add('aviso', 'Cabeçalho', `O nome do reclamante extraído ("${an.reclamante}") não aparece no cabeçalho.`);
+      if (an.numero_processo) {
+        const dig = (s) => String(s).replace(/\D/g, '');
+        if (dig(an.numero_processo) && !dig(first.join(' ')).includes(dig(an.numero_processo))) add('aviso', 'Cabeçalho', `O número do processo extraído (${an.numero_processo}) não aparece no cabeçalho.`);
+      }
+    }
+    // cobertura de pedidos
+    if (an.pedidos_inicial) {
+      const stop = new Set(['pedido', 'pagamento', 'valor', 'reclamante', 'reclamada', 'diferencas', 'condenacao', 'devido', 'devida', 'tempo', 'periodo', 'contrato', 'trabalho', 'sobre', 'forma', 'parcelas', 'verbas', 'conforme']);
+      const faltando = [];
+      for (const raw of String(an.pedidos_inicial).split('\n').slice(0, 40)) {
+        const txt = raw.replace(/^\s*[-•*\d.)]+\s*/, '').replace(/\((?:fl|ID)[^)]*\)/gi, '').trim();
+        if (txt.length < 8) continue;
+        const toks = [...new Set(nw(txt).split(' ').filter(w => w.length >= 5 && !stop.has(w)))].slice(0, 6);
+        if (toks.length < 1) continue;
+        const hit = toks.filter(w => dnw.includes(w)).length / toks.length;
+        if (hit < 0.5) faltando.push(txt.length > 100 ? txt.slice(0, 97) + '...' : txt);
+      }
+      if (faltando.length) add('aviso', 'Cobertura de pedidos', `Pedido(s) da inicial que talvez não tenham sido enfrentados (heurística por palavras-chave): ${faltando.slice(0, 5).map(s => `"${s}"`).join(' | ')}${faltando.length > 5 ? ' ...' : ''}`);
+      else add('ok', 'Cobertura de pedidos', 'Os pedidos extraídos da inicial aparecem na minuta (heurística por palavras-chave).');
+    }
+  }
+
+  return { items, citacoes: extractCitations(draft) };
+}
+
+/* ---------- Normalização do JSON de extração ---------- */
+function normalizeAnalysis(a) {
+  a = a && typeof a === 'object' ? a : {};
+  const s = (v) => (typeof v === 'string' ? v : Array.isArray(v) ? v.map(x => '- ' + x).join('\n') : v == null ? '' : String(v));
+  const b = (v) => (v === true || v === false) ? v : null;
+  const j = a.jurisprudencia && typeof a.jurisprudencia === 'object' ? a.jurisprudencia : {};
+  const prazos = Array.isArray(a.prazos_processuais) ? a.prazos_processuais : [];
+  return {
+    numero_processo: s(a.numero_processo), reclamante: s(a.reclamante), reclamada: s(a.reclamada), vt: s(a.vt),
+    materia_principal: s(a.materia_principal),
+    rito: ['sumaríssimo', 'ordinário', 'não identificado'].includes(a.rito) ? a.rito : 'não identificado',
+    revelia: b(a.revelia),
+    data_ajuizamento: s(a.data_ajuizamento), data_admissao: s(a.data_admissao), data_rescisao: s(a.data_rescisao),
+    prescricao_requerida: b(a.prescricao_requerida),
+    alegacoes_inicial: s(a.alegacoes_inicial), pedidos_inicial: s(a.pedidos_inicial),
+    alegacoes_contestacao: s(a.alegacoes_contestacao), pedidos_contestacao: s(a.pedidos_contestacao),
+    provas_autor: s(a.provas_autor), provas_reclamada: s(a.provas_reclamada), analise_provas: s(a.analise_provas),
+    provas_produzidas: s(a.provas_produzidas),
+    jurisprudencia: { trt4: s(j.trt4), tst: s(j.tst), stf: s(j.stf) },
+    prazos_processuais: prazos.filter(p => p && (p.data || p.descricao)).map((p, i) => ({
+      id: `ia-${i}`, data: s(p.data) || 'Data nos autos', descricao: s(p.descricao) || 'Prazo processual relevante',
+      tipo: PRAZOS_TIPOS.includes(p.tipo) ? p.tipo : 'outro',
+      status: ['urgente', 'alerta', 'cumprido', 'informativo'].includes(p.status) ? p.status : 'alerta',
+      origem: s(p.fonte) || 'Análise por IA'
+    })),
+    alertas: Array.isArray(a.alertas) ? a.alertas.map(s).filter(Boolean) : []
+  };
+}
+function parseJsonLoose(raw) {
+  let t = String(raw || '').trim();
+  const a = t.indexOf('{'), z = t.lastIndexOf('}');
+  if (a === -1 || z === -1) throw new Error('Resposta sem JSON.');
+  t = t.slice(a, z + 1);
+  try { return JSON.parse(t); } catch (e) {
+    return JSON.parse(t.replace(/[\u0000-\u001F]+/g, ' '));
+  }
+}
+// verifica se um dado extraído consta literalmente nos autos
+function dadoNosAutos(valor, corpusRaw) {
+  if (!valor) return null;
+  const v = String(valor).trim();
+  if (!v) return null;
+  const digits = v.replace(/\D/g, '');
+  if (/^\d{1,2}[\/.\-]\d{1,2}[\/.\-]\d{2,4}$/.test(v)) {
+    const o = parseBR(v);
+    if (!o) return false;
+    const re = new RegExp(`\\b0?${o.d}[\\/.\\-]0?${o.m}[\\/.\\-](?:${o.y}|${String(o.y).slice(2)})\\b`);
+    if (re.test(corpusRaw)) return true;
+    const mes = Object.keys(MESES).find(k => MESES[k] === o.m && !k.includes('ç'));
+    return new RegExp(`\\b0?${o.d}\\s+de\\s+${mes === 'marco' ? 'mar[çc]o' : mes}\\s+de\\s+${o.y}\\b`, 'i').test(corpusRaw);
+  }
+  if (digits.length >= 10) return corpusRaw.replace(/\D/g, '').includes(digits);
+  return nw(corpusRaw).includes(nw(v));
+}
+
+/* ---------- Renderização leve de texto ---------- */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function inlineMd(s) {
+  return esc(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*\w])\*([^*\n]+)\*(?![*\w])/g, '$1<em>$2</em>');
+}
+function mdToHtml(md) {
+  const out = [];
+  let list = null;
+  const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+  for (const raw of String(md || '').replace(/\r/g, '').split('\n')) {
+    const l = raw.trimEnd();
+    if (!l.trim()) { close(); continue; }
+    let m;
+    if ((m = l.match(/^(#{1,4})\s+(.*)$/))) { close(); const lv = Math.min(m[1].length + 2, 6); out.push(`<h${lv}>${inlineMd(m[2])}</h${lv}>`); continue; }
+    if ((m = l.match(/^\s*[-*•]\s+(.*)$/))) { if (list !== 'ul') { close(); out.push('<ul>'); list = 'ul'; } out.push(`<li>${inlineMd(m[1])}</li>`); continue; }
+    if ((m = l.match(/^\s*(\d+)[.)]\s+(.*)$/))) { if (list !== 'ol') { close(); out.push('<ol>'); list = 'ol'; } out.push(`<li>${inlineMd(m[2])}</li>`); continue; }
+    close();
+    out.push(`<p>${inlineMd(l)}</p>`);
+  }
+  close();
+  return out.join('\n');
+}
+// Papel da minuta: preserva a formatação jurídica
+function draftToHtml(text, tipo) {
+  const lines = ensureSentencaHeading(String(text || ''), tipo).replace(/\r/g, '').split('\n');
+  const out = [];
+  for (const raw of lines) {
+    const l = raw.trim();
+    if (!l) continue;
+    const plain = l.replace(/[*#]/g, '').trim();
+    const up = plain.toUpperCase();
+    if (/^(SENTEN[ÇC]A|SENTEN[ÇC]A DE EMBARGOS DE DECLARA[ÇC][ÃA]O)$/.test(up)) { out.push(`<h1 class="p-sent">${esc(plain)}</h1>`); continue; }
+    if (headingOf(l)) { out.push(`<h2 class="p-tit">${esc(headingOf(l))}</h2>`); continue; }
+    if (/^(PROCESSO\s+N|RECLAMANTE:|RECLAMADAS?(\(S\))?:|RECLAMADO:|VT:|ATOrd\b)/i.test(plain)) { out.push(`<p class="p-cab">${inlineMd(l)}</p>`); continue; }
+    if (/^(I\s*[-–—]\s*RELAT|II\s*[-–—]\s*FUNDAMENTA|III\s*[-–—]\s*DISPOSITIVO)/i.test(plain)) { out.push(`<h2 class="p-tit">${esc(plain.replace(/:$/, ''))}</h2>`); continue; }
+    if (/^-\s+/.test(l)) { out.push(`<p class="p-item">${inlineMd(l)}</p>`); continue; }
+    let h = inlineMd(l);
+    h = h.replace(/\[ALERTA DE INCONSIST[^\]]*\]/gi, (x) => `<mark class="p-alerta">${x}</mark>`);
+    out.push(`<p>${h}</p>`);
+  }
+  return out.join('\n');
+}
+
+/* ---------- DOCX (sem dependências além do JSZip) ---------- */
+const xmlEsc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function docxRuns(line, forceBold) {
+  const runs = [];
+  let cur = '', bold = false, ital = false;
+  const flush = () => {
+    if (!cur) return;
+    runs.push(`<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>${(bold || forceBold) ? '<w:b/>' : ''}${ital ? '<w:i/>' : ''}<w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr><w:t xml:space="preserve">${xmlEsc(cur)}</w:t></w:r>`);
+    cur = '';
+  };
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '*' && line[i + 1] === '*') { flush(); bold = !bold; i++; }
+    else if (line[i] === '*') { flush(); ital = !ital; }
+    else cur += line[i];
+  }
+  flush();
+  return runs.join('');
+}
+
+function docxBody(text, tipo) {
+  const lines = ensureSentencaHeading(cleanDraft(text), tipo).split('\n');
+  const paras = [];
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    let p = line.trim().replace(/^#{1,6}\s+/, '');
+    const normalized = p.replace(/[*#]/g, '').trim().toUpperCase();
+    let isHeader = false;
+    if (/^(I\s*[-–—]?\s*)?RELAT[ÓO]RIO:?$/.test(normalized)) { p = 'I - RELATÓRIO'; isHeader = true; }
+    else if (/^(II\s*[-–—]?\s*)?FUNDAMENTA[ÇC][ÃA]O:?$/.test(normalized)) { p = 'II - FUNDAMENTAÇÃO'; isHeader = true; }
+    else if (/^(III\s*[-–—]?\s*)?DISPOSITIVO:?$/.test(normalized)) { p = 'III - DISPOSITIVO'; isHeader = true; }
+    else if (/^\*\*\s*\d+(\.\d+)*[.)\-]\s*/.test(p)) p = p.replace(/^\*\*\s*\d+(\.\d+)*[.)\-]\s*/, '**');
+    const isSent = /^SENTEN[ÇC]A( DE EMBARGOS DE DECLARA[ÇC][ÃA]O)?$/.test(normalized);
+    const isCab = /^(PROCESSO\s+N|RECLAMANTE:|RECLAMADAS?(\(S\))?:|RECLAMADO:|VT:|ATOrd\b)/i.test(normalized);
+    const isBoldLine = /^\*\*[^*].*\*\*:?$/.test(p);
+    const isTitle = isHeader || isSent || isBoldLine || (p === p.toUpperCase() && p.length > 5 && p.length < 100 && /[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{4}/.test(p) && !/^[-•]/.test(p));
+    const spacing = (isTitle && !isCab) ? '<w:spacing w:before="240" w:after="120" w:line="360" w:lineRule="auto"/>' : '<w:spacing w:before="0" w:after="0" w:line="360" w:lineRule="auto"/>';
+    const ind = (isSent || isCab || isTitle) ? '' : '<w:ind w:firstLine="850"/>';
+    const jc = isSent ? 'center' : (isCab ? 'left' : 'both');
+    paras.push(`<w:p><w:pPr>${spacing}${ind}<w:jc w:val="${jc}"/></w:pPr>${docxRuns(p, isTitle)}</w:p>`);
+  }
+  return paras.join('');
+}
+
+async function buildDocx(text, tipo, JSZipCtor, outType) {
+  const zip = new JSZipCtor();
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`);
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`);
+  zip.file('docProps/core.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>${tipo === 'ed' ? 'Minuta de Sentença de Embargos de Declaração' : 'Minuta de Sentença Trabalhista'}</dc:title><dc:creator>Gabinete Digital</dc:creator></cp:coreProperties>`);
+  zip.file('word/_rels/document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file('word/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault></w:docDefaults></w:styles>`);
+  zip.file('word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${docxBody(text, tipo)}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`);
+  return zip.generateAsync({ type: outType || 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+
+function safeFilename(analysis, tipo) {
+  const a = analysis || {};
+  const parts = [a.numero_processo || (tipo === 'ed' ? 'Embargos' : 'Processo'), (a.reclamada || 'Reclamada').toUpperCase(), a.materia_principal || (tipo === 'ed' ? 'Embargos de Declaração' : 'Sentença')];
+  return parts.join(' - ').replace(/[\\/:*?"<>|]/g, '_').slice(0, 150) + '.docx';
+}
+
+/* ===== Interface e fluxo de trabalho ===== */
+(function () {
+  'use strict';
+
+  const LIM = { PROMPT: 262144, DIRECT_MAX: 110000, CHUNK: 120000, NOTES_MAX: 100000, MAX_CHUNKS: 12 };
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  const state = {
+    files: [],
+    flags: { sumarissimo: false, revelia: false, procedenteTotal: false, improcedenteTotal: false },
+    tipo: 'standard',
+    analysis: null, verif: {}, notes: '', analysisSig: '',
+    deadlinesScan: [],
+    draft: '', draftTipo: 'standard', truncated: false,
+    check: null,
+    parecer: '', parecerChecks: null,
+    history: [],
+    busy: false, ctls: new Set(),
+    sample: null, downloads: null,
+    corpusCache: { sig: '', nw: '', raw: '' },
+    activeTab: 'inicial', deadlineFilter: 'todos', editing: false
+  };
+
+  /* ---------- utilidades de interface ---------- */
+  let toastTimer = null;
+  function toast(msg, kind) {
+    const el = $('#toast');
+    el.textContent = msg;
+    el.className = 'toast ' + (kind || '');
+    el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.hidden = true; }, kind === 'err' ? 9000 : 4500);
+  }
+  function lsGet(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  const fmtInt = (n) => n.toLocaleString('pt-BR');
+  const fmtDateTime = (ts) => new Date(ts).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  let uid = 0;
+
+  function setTab(name) {
+    state.activeTab = name;
+    $$('.tab').forEach(b => { const on = b.dataset.tab === name; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
+    $$('.panel').forEach(p => { p.hidden = p.id !== 'tab-' + name; });
+  }
+
+  /* ---------- Claude (sample) ---------- */
+  const ERR = {
+    not_granted: 'O uso do Claude não foi autorizado neste artefato. Recarregue a página e permita quando o pedido aparecer.',
+    rate_limited: 'Limite de uso atingido. Aguarde alguns minutos e tente de novo.',
+    prompt_too_large: 'O conteúdo enviado passou do limite de tamanho. Envie menos arquivos ou rode a extração para criar o fichamento dos autos.',
+    session_expired: 'A sessão expirou. Entre novamente no Claude.',
+    sampling_disabled: 'O Claude não está disponível para esta conta ou organização.',
+    refused: 'O Claude recusou este pedido. Reformule as diretrizes.',
+    empty_completion: 'O Claude não devolveu texto. Tente de novo com menos conteúdo.',
+    invalid_json: 'A resposta não veio em formato estruturado. Tente de novo.',
+    upstream_error: 'Falha temporária de conexão com o Claude. Tente de novo.',
+    cancelled: 'Operação interrompida.',
+    invalid_request: 'Pedido inválido enviado ao Claude (erro do aplicativo).',
+    tools_unavailable: 'Recurso indisponível neste ambiente.',
+    capability_disabled: 'O Claude está desativado neste ambiente.',
+    not_declared: 'O artefato não declara o uso do Claude.'
+  };
+  const errMsg = (e) => (e && e.code && ERR[e.code]) || (e && e.message) || 'Erro inesperado.';
+
+  async function ask(input, opt) {
+    opt = opt || {};
+    if (!state.sample) { const e = new Error('Claude indisponível'); e.code = 'capability_disabled'; throw e; }
+    const ctl = new AbortController();
+    state.ctls.add(ctl);
+    const o = { signal: ctl.signal, modelTier: opt.tier || 'default', cache: !!opt.cache };
+    if (opt.onText) o.onText = opt.onText;
+    const inp = input;
+    try {
+      if (opt.json) {
+        try { return await state.sample.json(inp, o); }
+        catch (e) {
+          if (e && e.code === 'invalid_json' && e.text) { try { return parseJsonLoose(e.text); } catch (_) { /* segue */ } }
+          throw e;
+        }
+      }
+      return await state.sample(inp, o);
+    } finally { state.ctls.delete(ctl); }
+  }
+  // executa tarefas em paralelo com limite de simultaneidade, preservando a ordem; falha rápido e cancela as demais
+  async function mapPool(items, limit, fn) {
+    const out = new Array(items.length);
+    let next = 0, failed = null;
+    async function worker() {
+      while (!failed) {
+        const i = next++;
+        if (i >= items.length) return;
+        try { out[i] = await fn(items[i], i); }
+        catch (e) { failed = failed || e; stopNow(); return; }
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+    if (failed) throw failed;
+    return out;
+  }
+
+  function setBusy(on, label) {
+    state.busy = on;
+    const pr = $('#progress');
+    pr.hidden = !on;
+    if (on) { $('#progText').textContent = label || 'Trabalhando...'; $('#progBar').style.width = '0%'; $('#progBar').parentElement.classList.add('indet'); }
+    ['btnGenerate', 'btnRefine', 'btnParecer', 'btnFix', 'btnContinue'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = on || !state.sample; });
+  }
+  function progress(text, pct) {
+    $('#progText').textContent = text;
+    const bar = $('#progBar');
+    if (typeof pct === 'number') { bar.parentElement.classList.remove('indet'); bar.style.width = Math.max(2, Math.min(100, pct)) + '%'; }
+  }
+  const stopNow = () => { state.ctls.forEach(c => { try { c.abort(); } catch (e) { /* ignora */ } }); };
+
+  /* ---------- Autos: leitura dos arquivos ---------- */
+  function pdfWorkerSetup() {
+    if (window.__pdfWorkerReady) return;
+    const url = window.__PDF_WORKER_URL__ || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    try {
+      const blob = new Blob(['importScripts("' + url + '");'], { type: 'text/javascript' });
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+    } catch (e) { window.pdfjsLib.GlobalWorkerOptions.workerSrc = url; }
+    window.__pdfWorkerReady = true;
+  }
+  function textToBlocks(text, size) {
+    size = size || 3500;
+    const paras = String(text).replace(/\r/g, '').split(/\n+/).map(s => s.trim()).filter(Boolean);
+    const blocks = [];
+    let cur = '';
+    for (const p of paras) {
+      if (cur && cur.length + p.length + 1 > size) { blocks.push(cur); cur = ''; }
+      cur = cur ? cur + '\n' + p : p;
+    }
+    if (cur) blocks.push(cur);
+    return blocks.map((t, i) => ({ n: i + 1, text: t }));
+  }
+  async function readPdf(file, onProg) {
+    if (!window.pdfjsLib) throw new Error('O leitor de PDF não carregou neste ambiente. Envie DOCX ou TXT, ou cole o texto.');
+    pdfWorkerSetup();
+    const data = await file.arrayBuffer();
+    const pdf = await window.pdfjsLib.getDocument({ data }).promise;
+    const N = pdf.numPages;
+    const pages = new Array(N);
+    let done = 0, next = 1;
+    const readPage = async (i) => {
+      const pg = await pdf.getPage(i);
+      const tc = await pg.getTextContent();
+      let t = tc.items.map(it => it.str + (it.hasEOL ? '\n' : ' ')).join('');
+      t = t.replace(/[ \t]+/g, ' ').replace(/ ?\n ?/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+      pages[i - 1] = { n: i, text: t };
+      if (pg.cleanup) pg.cleanup();
+      done++;
+      if (onProg && (done % 10 === 0 || done === N)) onProg(done, N);
+    };
+    const worker = async () => { while (next <= N) { const i = next++; await readPage(i); } };
+    await Promise.all(Array.from({ length: Math.min(8, N) }, worker));
+    return { kind: 'pdf', pages };
+  }
+  async function readDocx(file) {
+    if (!window.mammoth) throw new Error('O leitor de DOCX não carregou neste ambiente. Envie PDF ou TXT, ou cole o texto.');
+    const r = await window.mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() });
+    return { kind: 'texto', pages: textToBlocks(r.value) };
+  }
+  async function readTxt(file) {
+    return { kind: 'texto', pages: textToBlocks(await file.text()) };
+  }
+  async function readAny(file, onProg) {
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (ext === 'pdf' || file.type === 'application/pdf') return readPdf(file, onProg);
+    if (ext === 'docx') return readDocx(file);
+    if (ext === 'txt' || file.type === 'text/plain') return readTxt(file);
+    throw new Error('Formato não suportado: ' + file.name + '. Use PDF, DOCX ou TXT.');
+  }
+  async function ingest(fileList) {
+    for (const f of Array.from(fileList)) {
+      const entry = { id: ++uid, name: f.name, kind: 'pdf', pages: [], chars: 0, emptyPages: 0, loading: true, prog: '' };
+      state.files.push(entry);
+      renderFiles();
+      try {
+        const r = await readAny(f, (i, n) => { entry.prog = `lendo página ${i} de ${n}`; renderFiles(); });
+        entry.kind = r.kind; entry.pages = r.pages;
+        entry.chars = r.pages.reduce((a, p) => a + p.text.length, 0);
+        entry.emptyPages = r.pages.filter(p => !p.text.trim()).length;
+        entry.loading = false;
+      } catch (e) {
+        state.files = state.files.filter(x => x.id !== entry.id);
+        toast(`${f.name}: ${e.message || 'não foi possível ler o arquivo.'}`, 'err');
+      }
+      renderFiles();
+    }
+    onAutosChanged();
+    autoExtract();
+  }
+  function autoExtract() {
+    if (!state.sample || state.busy || state.files.some(f => f.loading) || !readyFiles().length) return;
+    runExtraction();
+  }
+  function onAutosChanged() {
+    state.corpusCache.sig = '';
+    renderFiles(); renderResumo(); updateButtons();
+  }
+  const readyFiles = () => state.files.filter(f => !f.loading);
+  const filesSig = () => readyFiles().map(f => f.name + ':' + f.chars).join('|');
+  const autosSig = () => readyFiles().map(f => f.name + ':' + f.chars).join('|') + '#' + $('#diretrizes').value.length;
+  function corpus() {
+    const sig = autosSig();
+    if (state.corpusCache.sig !== sig) {
+      const raw = stripMarkers(autosText(readyFiles())) + '\n' + $('#diretrizes').value;
+      state.corpusCache = { sig, raw, nw: nw(raw) };
+    }
+    return state.corpusCache;
+  }
+  function autosTotalChars() { return readyFiles().reduce((a, f) => a + f.chars, 0); }
+
+  function renderFiles() {
+    const box = $('#fileList');
+    if (!state.files.length) { box.innerHTML = ''; return; }
+    box.innerHTML = state.files.map(f => {
+      const info = f.loading ? `<span class="muted">${esc(f.prog || 'lendo...')}</span>`
+        : `<span class="muted">${f.kind === 'pdf' ? fmtInt(f.pages.length) + ' pág.' : fmtInt(f.pages.length) + ' bloco(s)'} · ${fmtInt(f.chars)} caracteres</span>`;
+      const warn = (!f.loading && f.emptyPages) ? `<div class="file-warn">${f.emptyPages} página(s) sem texto. Pode ser PDF digitalizado; este aplicativo não faz OCR.</div>` : '';
+      return `<li class="file"><div class="file-row"><span class="file-name" title="${esc(f.name)}">${esc(f.name)}</span><button class="icon-btn" data-rm="${f.id}" aria-label="Remover ${esc(f.name)}">Remover</button></div>${info}${warn}</li>`;
+    }).join('');
+    const tot = autosTotalChars();
+    const big = tot > LIM.DIRECT_MAX;
+    $('#autosInfo').textContent = state.files.length
+      ? `${fmtInt(tot)} caracteres no total. ${big ? 'Autos extensos: serão resumidos em fichamento com trechos literais antes de redigir.' : 'Cabem inteiros na redação da minuta.'}`
+      : '';
+  }
+
+  /* ---------- Opções e diretrizes ---------- */
+  function effectiveFlags() {
+    const d = $('#diretrizes').value.toLowerCase();
+    const f = state.flags;
+    return {
+      sumarissimo: f.sumarissimo || /sumar[ií]ssimo/.test(d),
+      revelia: f.revelia || /revelia|revel da reclamada/.test(d),
+      procedenteTotal: f.procedenteTotal || /(?<!im)proced[êe]ncia total|(?<!im)proced[êe]ncia de todos os pedidos|totalmente procedente|(?<!im)procedentes todos os pedidos/.test(d),
+      improcedenteTotal: f.improcedenteTotal || /improced[êe]ncia total|totalmente improcedente|improced[êe]ncia de todos os pedidos|improcedentes todos os pedidos/.test(d)
+    };
+  }
+  function saveDirectives() {
+    const v = { diretrizes: $('#diretrizes').value, flags: state.flags, tipo: state.tipo, rigor: $('#rigor').value, extrairAntes: $('#optExtract').checked };
+    lsSet('gd:diretrizes', v);
+    $('#saveState').textContent = 'Salvo neste navegador';
+  }
+  function loadDirectives() {
+    const v = lsGet('gd:diretrizes', null);
+    if (!v) return;
+    $('#diretrizes').value = v.diretrizes || '';
+    state.flags = Object.assign(state.flags, v.flags || {});
+    state.tipo = v.tipo === 'ed' ? 'ed' : 'standard';
+    if (v.rigor) $('#rigor').value = v.rigor;
+    if (typeof v.extrairAntes === 'boolean') $('#optExtract').checked = v.extrairAntes;
+    $('#fSum').checked = !!state.flags.sumarissimo; $('#fRev').checked = !!state.flags.revelia;
+    $('#fProc').checked = !!state.flags.procedenteTotal; $('#fImproc').checked = !!state.flags.improcedenteTotal;
+    $$('input[name=tipo]').forEach(r => { r.checked = r.value === state.tipo; });
+  }
+  function updateButtons() {
+    const has = readyFiles().length > 0 || $('#diretrizes').value.trim().length > 0;
+    const ok = !!state.sample;
+    $('#btnGenerate').disabled = state.busy || !ok || !has;
+  }
+
+  /* ---------- Montagem de prompts ---------- */
+  function dossieTexto(an) {
+    if (!an) return '(sem extração prévia)';
+    const marco = marcoPrescricional(an.data_ajuizamento);
+    const L = [];
+    L.push(`Processo: ${an.numero_processo || 'não identificado'}`);
+    L.push(`Reclamante: ${an.reclamante || 'não identificado'}`);
+    L.push(`Reclamada: ${an.reclamada || 'não identificada'}`);
+    L.push(`Vara do Trabalho: ${an.vt || 'não identificada'}`);
+    L.push(`Matéria principal: ${an.materia_principal || 'não identificada'}`);
+    L.push(`Rito segundo os autos: ${an.rito}`);
+    L.push(`Revelia da reclamada: ${an.revelia === true ? 'sim' : an.revelia === false ? 'não' : 'não identificado'}`);
+    L.push(`Ajuizamento: ${an.data_ajuizamento || 'não identificado'}${marco ? ` | marco da prescrição quinquenal (calculado pelo sistema): ${marco}` : ''}`);
+    L.push(`Admissão: ${an.data_admissao || 'não identificada'} | Rescisão: ${an.data_rescisao || 'não identificada'}`);
+    L.push(`Prescrição requerida por alguma parte: ${an.prescricao_requerida === true ? 'sim' : an.prescricao_requerida === false ? 'não' : 'não identificado'}`);
+    if (an.pedidos_inicial) L.push(`\nPedidos da inicial:\n${an.pedidos_inicial}`);
+    if (an.pedidos_contestacao) L.push(`\nPedidos/teses da contestação:\n${an.pedidos_contestacao}`);
+    if (an.alertas && an.alertas.length) L.push(`\nAlertas da extração:\n${an.alertas.map(a => '- ' + a).join('\n')}`);
+    return L.join('\n');
+  }
+  function optsPrompt(tipo) {
+    const an = state.analysis;
+    const fl = effectiveFlags();
+    const marco = an ? marcoPrescricional(an.data_ajuizamento) : null;
+    let aplicavel = null;
+    if (an && marco) {
+      const adm = parseBR(an.data_admissao), mar = parseBR(marco);
+      if (an.prescricao_requerida === true) aplicavel = true;
+      else if (adm && mar && cmpD(adm, mar) < 0) aplicavel = true;
+      else if (an.prescricao_requerida === false && adm && mar) aplicavel = false;
+    }
+    return { tipo, sumarissimo: fl.sumarissimo, revelia: fl.revelia, procedenteTotal: fl.procedenteTotal, improcedenteTotal: fl.improcedenteTotal, marcoPrescricional: marco, dataAjuizamento: an && an.data_ajuizamento, prescricaoAplicavel: aplicavel };
+  }
+  const cmpD = (a, b) => (a.y - b.y) || (a.m - b.m) || (a.d - b.d);
+
+  // escolhe entre autos integrais e fichamento, respeitando o limite de 256 KiB
+  function autosSection(otherBytes) {
+    const files = readyFiles();
+    if (!files.length) return { mode: 'nenhum', text: '=== AUTOS ===\n(nenhum arquivo de autos foi enviado; baseie-se apenas nas diretrizes e não invente fatos)' };
+    const text = autosText(files);
+    const avail = Math.floor(LIM.PROMPT * 0.94) - otherBytes - 3000;
+    if (byteLen(text) <= avail) return { mode: 'integral', text: '=== AUTOS (texto integral) ===\n' + text };
+    if (state.notes && !analysisStale() && byteLen(state.notes) <= avail) return { mode: 'fichamento', text: PARECER_FORMATO_FICHAMENTO + '\n\n=== FICHAMENTO DOS AUTOS ===\n' + state.notes };
+    return { mode: 'insuficiente', text: '' };
+  }
+  function promptGeracao(tipo, extraBytes) {
+    const sys = (tipo === 'ed' ? SYSTEM_INSTRUCTION_ED : SYSTEM_INSTRUCTION) + regrasAdicionais(optsPrompt(tipo));
+    const dir = $('#diretrizes').value.trim();
+    const head = `${sys}\n\n=== DIRETRIZES DO MAGISTRADO ===\n${dir || '(nenhuma diretriz específica; decida conforme os autos e a lei)'}\n\n=== DADOS EXTRAÍDOS PELO SISTEMA (apoio; confira com os autos; havendo divergência, prevalecem os autos) ===\n${dossieTexto(state.analysis)}\n\n`;
+    const tail = `\n\n=== TAREFA ===\nRedija agora a minuta completa de ${tipo === 'ed' ? 'SENTENÇA DE EMBARGOS DE DECLARAÇÃO' : 'SENTENÇA'}, aplicando todas as regras acima. Responda apenas com o texto da minuta, terminando em "Nada mais.".`;
+    const sec = autosSection(byteLen(head + tail) + (extraBytes || 0));
+    return { head, tail, sec, full: sec.mode === 'insuficiente' ? null : head + sec.text + tail };
+  }
+
+  /* ---------- Extração dos dados ---------- */
+  function promptExtracaoDireta(text) {
+    return `${EXTRACAO_SPEC}\n\n${MARCADORES_AUTOS}\n\nREALIZE A EXTRAÇÃO ESTRUTURADA EXAUSTIVA E COMPLETA do processo a partir dos autos abaixo. Extraia minuciosamente todos os fatos, pedidos, defesas, provas com IDs e folhas, e prazos. Responda unicamente com o JSON.\n\n=== AUTOS ===\n${text}`;
+  }
+  function promptExtracaoNotas(notes) {
+    return `${EXTRACAO_SPEC}\n\n${MARCADORES_AUTOS}\n\nOs autos eram extensos e foram resumidos nos FICHAMENTOS abaixo, que contêm âncoras [fl. | ID] e trechos literais. Trate-os como a fonte dos autos. REALIZE A EXTRAÇÃO ESTRUTURADA EXAUSTIVA E COMPLETA e responda unicamente com o JSON.\n\n=== FICHAMENTOS ===\n${notes}`;
+  }
+  async function reduceNotes(parts) {
+    let round = 0;
+    let cur = parts;
+    while (cur.join('\n\n').length > LIM.NOTES_MAX && round < 3) {
+      round++;
+      const batches = [];
+      let b = '';
+      for (const p of cur) {
+        if (b && b.length + p.length > 150000) { batches.push(b); b = ''; }
+        b += (b ? '\n\n' : '') + p;
+      }
+      if (b) batches.push(b);
+      if (batches.length === 1 && b.length <= LIM.NOTES_MAX) return b;
+      const target = Math.floor(LIM.NOTES_MAX / batches.length);
+      const out = await mapPool(batches, 3, async (bt, i) => {
+        progress(`Condensando o fichamento (rodada ${round}, ${batches.length} parte(s) em paralelo)...`);
+        const r = await ask(`Consolide os fichamentos abaixo em UM fichamento único de no máximo ${fmtInt(target)} caracteres. Elimine repetições, mas preserve TODAS as âncoras [fl. N | ID], datas, valores, pedidos, teses e os trechos literais entre aspas dos depoimentos, laudos e documentos-chave. Não interprete nem invente. Responda só com o fichamento.\n\n${bt}`, { tier: 'default', cache: true });
+        return r.text;
+      });
+      cur = out;
+    }
+    return cur.join('\n\n');
+  }
+
+  async function runExtraction(onlyNotes) {
+    const files = readyFiles();
+    const dir = $('#diretrizes').value.trim();
+    if (!files.length && !dir) { toast('Envie os autos ou escreva as diretrizes.', 'err'); return false; }
+    setBusy(true, 'Lendo os autos...');
+    try {
+      const blocks = files.length ? allBlocks(files) : ['[[ARQUIVO: Diretrizes]]\n' + dir];
+      const total = blocks.reduce((a, b) => a + b.length + 1, 0);
+      let notes = '';
+      let raw = null;
+      const textAll = blocks.join('\n');
+      const direto = promptExtracaoDireta(textAll);
+      if (!onlyNotes && byteLen(direto) <= Math.floor(LIM.PROMPT * 0.9)) {
+        progress('Extraindo os dados estruturados dos autos (uma única leitura)...');
+        raw = await ask(direto, { tier: 'default', json: true, cache: true });
+      } else {
+        const chunks = chunkBlocks(blocks, LIM.CHUNK);
+        const use = chunks.slice(0, LIM.MAX_CHUNKS);
+        if (chunks.length > use.length) toast(`Os autos têm ${chunks.length} partes; apenas as ${use.length} primeiras serão processadas.`, 'warn');
+        let feitos = 0;
+        progress(`Fichando os autos em paralelo: ${use.length} parte(s)...`, 2);
+        const parts = await mapPool(use, 3, async (ch, i) => {
+          const r = await ask(`${FICHAMENTO_SPEC}\n\n${MARCADORES_AUTOS}\n\n=== PARTE ${i + 1} DE ${use.length} DOS AUTOS ===\n${ch}`, { tier: 'default', cache: true });
+          feitos++; progress(`Fichando os autos: ${feitos} de ${use.length} partes prontas...`, (feitos / (use.length + 1)) * 100);
+          return `### Parte ${i + 1} de ${use.length}\n${r.text}`;
+        });
+        notes = await reduceNotes(parts);
+        if (!onlyNotes) {
+          progress('Consolidando os dados estruturados...', 92);
+          raw = await ask(promptExtracaoNotas(notes), { tier: 'default', json: true, cache: true });
+        }
+      }
+      if (onlyNotes) {
+        state.notes = notes;
+        return true;
+      }
+      const an = normalizeAnalysis(raw);
+      state.analysis = an; state.notes = notes; state.analysisSig = filesSig();
+      const cp = corpus().raw;
+      state.verif = {
+        numero_processo: dadoNosAutos(an.numero_processo, cp), data_ajuizamento: dadoNosAutos(an.data_ajuizamento, cp),
+        data_admissao: dadoNosAutos(an.data_admissao, cp), data_rescisao: dadoNosAutos(an.data_rescisao, cp),
+        reclamante: dadoNosAutos(an.reclamante, cp), reclamada: dadoNosAutos(an.reclamada, cp)
+      };
+      state.deadlinesScan = extractDeadlinesFromText(cp);
+      renderResumo(); renderPrazos();
+      toast('Dados extraídos. Confira as abas Inicial, Pedidos, Defesa e Provas antes de gerar a minuta.', 'ok');
+      return true;
+    } catch (e) {
+      toast(errMsg(e), e && e.code === 'cancelled' ? '' : 'err');
+      return false;
+    } finally {
+      setBusy(false); updateButtons();
+    }
+  }
+  const analysisStale = () => !state.analysis || state.analysisSig !== filesSig();
+
+  /* ---------- Resumo ---------- */
+  function chip(v) {
+    if (v === true) return '<span class="chip ok" title="O valor aparece nos autos enviados">nos autos</span>';
+    if (v === false) return '<span class="chip warn" title="O valor extraído não foi encontrado literalmente nos autos">conferir</span>';
+    return '';
+  }
+  function renderResumo() {
+    const an = state.analysis;
+    const ids = ['inicialBody', 'pedidosBody', 'defesaBody', 'provasBody'];
+    const put = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
+    if (!an) {
+      const n = readyFiles().length;
+      const vazio = `<div class="empty"><h3>Nenhum dado extraído ainda</h3><p>${n ? 'A extração começa sozinha quando a leitura dos arquivos termina. Cada dado é conferido contra o texto dos autos.' : 'Comece enviando os autos (PDF, DOCX ou TXT) ou colando o texto. A análise aparece aqui depois da extração.'}</p></div>`;
+      ids.forEach(id => put(id, vazio));
+      return;
+    }
+    const marco = marcoPrescricional(an.data_ajuizamento);
+    const stale = analysisStale() ? '<div class="notice warn">Os autos mudaram depois da extração. Ela será refeita ao gerar a minuta.</div>' : '';
+    const fl = effectiveFlags();
+    const hints = [];
+    if (an.rito === 'sumaríssimo' && !fl.sumarissimo) hints.push(['sumarissimo', 'Os autos indicam rito sumaríssimo.']);
+    if (an.revelia === true && !fl.revelia) hints.push(['revelia', 'Os autos indicam revelia da reclamada.']);
+    const hintHtml = hints.map(h => `<div class="notice info">${esc(h[1])} <button class="link-btn" data-flag="${h[0]}">Marcar opção</button></div>`).join('');
+    const row = (k, v, c) => `<div class="kv"><dt>${k}</dt><dd>${v ? esc(v) : '<span class="muted">não identificado</span>'} ${c || ''}</dd></div>`;
+    const sec = (titulo, texto) => `<h3 class="h-sec">${titulo}</h3><div class="rich">${mdToHtml(texto) || '<p class="muted">Nada identificado nesta seção.</p>'}</div>`;
+    const als = an.alertas.slice();
+    const ix = idIndex(readyFiles());
+    if (ix.emptyPages) als.push(`${ix.emptyPages} página(s) dos autos sem texto legível (PDF digitalizado?). O conteúdo delas não foi lido.`);
+    const alertHtml = als.length ? `<details class="det" open><summary>Alertas para conferência (${als.length})</summary><ul>${als.map(a => `<li>${esc(a)}</li>`).join('')}</ul></details>` : '';
+    const juris = an.jurisprudencia;
+    const jurisHtml = (juris.trt4 || juris.tst || juris.stf) ? `<details class="det"><summary>Jurisprudência sugerida (não verificada)</summary><div class="notice info">Sugestões geradas pelo Claude a partir do conhecimento do modelo, sem consulta a bases oficiais. Confira número e tese de cada precedente na fonte oficial antes de usar.</div><h4>TRT4</h4>${mdToHtml(juris.trt4) || '<p class="muted">Sem itens.</p>'}<h4>TST</h4>${mdToHtml(juris.tst) || '<p class="muted">Sem itens.</p>'}<h4>STF</h4>${mdToHtml(juris.stf) || '<p class="muted">Sem itens.</p>'}</details>` : '';
+    put('inicialBody', `${stale}${hintHtml}
+      <dl class="kvs">
+        ${row('Processo', an.numero_processo, chip(state.verif.numero_processo))}
+        ${row('Reclamante', an.reclamante, chip(state.verif.reclamante))}
+        ${row('Reclamada', an.reclamada, chip(state.verif.reclamada))}
+        ${row('Vara', an.vt)}
+        ${row('Matéria', an.materia_principal)}
+        ${row('Rito', an.rito)}
+        ${row('Revelia', an.revelia === true ? 'Sim' : an.revelia === false ? 'Não' : '')}
+        ${row('Ajuizamento', an.data_ajuizamento, chip(state.verif.data_ajuizamento))}
+        ${row('Marco da prescrição quinquenal', marco ? marco + ' (calculado: 5 anos antes do ajuizamento)' : '')}
+        ${row('Admissão', an.data_admissao, chip(state.verif.data_admissao))}
+        ${row('Rescisão', an.data_rescisao, chip(state.verif.data_rescisao))}
+        ${row('Prescrição requerida', an.prescricao_requerida === true ? 'Sim' : an.prescricao_requerida === false ? 'Não' : '')}
+      </dl>
+      ${alertHtml}
+      ${sec('Alegações da petição inicial', an.alegacoes_inicial)}
+      ${jurisHtml}`);
+    put('pedidosBody', `${stale}${sec('Pedidos da inicial', an.pedidos_inicial)}${sec('Pedidos e requerimentos da defesa', an.pedidos_contestacao)}`);
+    put('defesaBody', `${stale}${sec('Alegações da defesa', an.alegacoes_contestacao)}`);
+    const semNovo = !an.provas_autor && !an.provas_reclamada && !an.analise_provas;
+    put('provasBody', `${stale}${semNovo ? sec('Provas produzidas', an.provas_produzidas) : `${sec('Provas do autor (reclamante)', an.provas_autor)}${sec('Provas da reclamada', an.provas_reclamada)}${sec('Análise das provas', an.analise_provas)}`}
+      <p class="muted small">A análise das provas é um apoio gerado a partir dos autos. Confira cada trecho nas folhas indicadas.</p>`);
+  }
+
+  /* ---------- Prazos ---------- */
+  const TIPOS = {
+    audiencia: ['Audiência', 'k-aud'], prazo: ['Prazo', 'k-prz'], prescricao: ['Prescrição', 'k-pre'],
+    distribuicao: ['Ajuizamento', 'k-dis'], pericia: ['Perícia', 'k-per'], outro: ['Marco dos autos', 'k-out']
+  };
+  function allDeadlines() {
+    const list = []; const seen = new Set();
+    const push = (p) => { const k = (p.data + '::' + p.descricao.slice(0, 30)).toLowerCase(); if (!seen.has(k)) { seen.add(k); list.push(p); } };
+    if (state.analysis) state.analysis.prazos_processuais.forEach(push);
+    state.deadlinesScan.forEach(push);
+    const peso = { urgente: 0, alerta: 1, informativo: 2, cumprido: 3 };
+    return list.sort((a, b) => (peso[a.status] ?? 9) - (peso[b.status] ?? 9));
+  }
+  function renderPrazos() {
+    const box = $('#prazosBody');
+    if (!box) return;
+    const all = allDeadlines();
+    const counts = {};
+    all.forEach(p => { counts[p.tipo] = (counts[p.tipo] || 0) + 1; });
+    const shown = all.filter(p => state.deadlineFilter === 'todos' || p.tipo === state.deadlineFilter);
+    if (!all.length) { box.innerHTML = `<div class="empty"><h3>Nenhum prazo ou data identificado</h3><p>Use "Procurar no texto dos autos" para varrer as datas e prazos, ou rode a extração de dados.</p></div>`; return; }
+    const chips = ['todos', ...Object.keys(counts)].map(k => `<button class="seg-btn" aria-pressed="${state.deadlineFilter === k}" data-dl="${k}">${k === 'todos' ? 'Todos' : TIPOS[k][0]} (${k === 'todos' ? all.length : counts[k]})</button>`).join('');
+    box.innerHTML = `<div class="seg">${chips}</div><ul class="dl">${shown.map((p, i) => {
+      const t = TIPOS[p.tipo] || TIPOS.outro;
+      return `<li class="dl-item"><div class="dl-top"><span class="dl-date ${t[1]}">${esc(p.data)}</span><span class="tag">${t[0]}</span>${p.status === 'urgente' ? '<span class="tag urg">Urgente</span>' : ''}<button class="link-btn" data-ins="${i}">Inserir nas diretrizes</button></div><p class="dl-desc">${esc(p.descricao)}</p>${p.contexto ? `<p class="dl-ctx">“${esc(p.contexto.trim())}”</p>` : (p.origem ? `<p class="dl-ctx">${esc(p.origem)}</p>` : '')}</li>`;
+    }).join('')}</ul>`;
+    box._shown = shown;
+  }
+
+  /* ---------- Minuta ---------- */
+  let paintTimer = null;
+  function paintDraft(text, tipo) {
+    $('#paper').innerHTML = draftToHtml(text, tipo || state.draftTipo);
+  }
+  function showDraftUI() {
+    const has = !!state.draft;
+    $('#minutaEmpty').hidden = has || state.busy;
+    $('#minutaWrap').hidden = !(has || state.busy);
+    $('#minutaMeta').textContent = state.draftTipo === 'ed' ? 'Sentença de embargos de declaração' : 'Sentença';
+    $('#truncNotice').hidden = !state.truncated;
+    $('#paper').hidden = state.editing;
+    $('#editor').hidden = !state.editing;
+    $('#btnEdit').textContent = state.editing ? 'Concluir edição' : 'Editar texto';
+    const dis = !has || state.busy;
+    ['btnEdit', 'btnCopy', 'btnDocx'].forEach(id => { $('#' + id).disabled = dis; });
+  }
+  function streamPaint(text, tipo) {
+    clearTimeout(paintTimer);
+    paintTimer = setTimeout(() => paintDraft(text, tipo), 120);
+  }
+  async function ensureAutosFit(tipo, extraBytes) {
+    let p = promptGeracao(tipo, extraBytes);
+    if (p.sec.mode === 'insuficiente') {
+      if (!state.notes || analysisStale()) {
+        progress('Os autos são extensos: criando o fichamento com trechos literais...');
+        const ok = await runExtractionInner(true);
+        if (!ok) return null;
+        p = promptGeracao(tipo, extraBytes);
+      }
+      if (p.sec.mode === 'insuficiente') throw Object.assign(new Error('Mesmo resumidos, os autos e a minuta não cabem em um único envio. Remova arquivos menos relevantes.'), { code: 'prompt_too_large' });
+    }
+    return p;
+  }
+  // versão sem setBusy próprio (já estamos ocupados)
+  async function runExtractionInner(onlyNotes) {
+    state.busy = false;
+    const was = $('#progress').hidden;
+    const ok = await runExtraction(!!onlyNotes && !analysisStale());
+    setBusy(true, $('#progText').textContent);
+    $('#progress').hidden = was;
+    return ok;
+  }
+
+  async function runGenerate() {
+    const tipo = state.tipo;
+    if (!readyFiles().length && !$('#diretrizes').value.trim()) { toast('Envie os autos ou escreva as diretrizes.', 'err'); return; }
+    if (analysisStale() && $('#optExtract').checked) {
+      const ok = await runExtraction();
+      if (!ok) return;
+    }
+    setBusy(true, 'Preparando a redação da minuta...');
+    state.editing = false; state.truncated = false;
+    try {
+      const p = await ensureAutosFit(tipo, 0);
+      if (!p) return;
+      if (p.sec.mode === 'fichamento') toast('Autos extensos: a minuta usa o fichamento com trechos literais, não o texto integral.', 'warn');
+      state.draft = ''; state.draftTipo = tipo; setTab('minuta'); showDraftUI();
+      $('#paper').innerHTML = '<p class="muted">O Claude está lendo os autos e pensando antes de escrever. Isso pode levar alguns minutos.</p>';
+      progress('Redigindo a minuta (modelo de maior rigor pode pensar por alguns minutos antes de escrever)...');
+      let partial = '';
+      const res = await ask([{ role: 'user', content: p.full }], {
+        tier: $('#rigor').value, onText: ({ text }) => { partial = text; progress('Redigindo a minuta... ' + fmtInt(text.length) + ' caracteres'); streamPaint(cleanDraft(text), tipo); }
+      });
+      state.truncated = !!res.truncated;
+      finishDraft(res.text, tipo, 'gerada');
+    } catch (e) {
+      if (e && e.text) { state.draft = cleanDraft(e.text); state.truncated = true; finishDraft(state.draft, tipo, 'parcial', true); }
+      toast(errMsg(e) + (e && e.text ? ' O texto parcial foi mantido.' : ''), e && e.code === 'cancelled' ? '' : 'err');
+    } finally {
+      setBusy(false); updateButtons(); showDraftUI();
+    }
+  }
+  function finishDraft(text, tipo, origem, quiet) {
+    state.draft = ensureSentencaHeading(cleanDraft(text), tipo);
+    state.draftTipo = tipo;
+    paintDraft(state.draft, tipo);
+    $('#editor').value = state.draft;
+    if (!/Nada mais\.\s*$/.test(state.draft)) state.truncated = true;
+    runChecks();
+    saveHistory(origem);
+    if (!quiet) {
+      const e = state.check ? state.check.items.filter(i => i.nivel === 'erro').length : 0;
+      toast(e ? `Minuta pronta, com ${e} ponto(s) a corrigir na seção Conferência, abaixo da minuta.` : 'Minuta pronta. Confira os avisos na seção Conferência, abaixo da minuta.', e ? 'warn' : 'ok');
+      
+    }
+  }
+  async function runRefine() {
+    const instr = $('#refineText').value.trim();
+    if (!state.draft) return;
+    if (!instr) { toast('Escreva o ajuste desejado.', 'err'); return; }
+    setBusy(true, 'Reescrevendo a minuta...');
+    state.editing = false;
+    try {
+      const tipo = state.draftTipo;
+      const extra = byteLen(state.draft) + byteLen(instr) + 1500;
+      const p = await ensureAutosFit(tipo, extra);
+      if (!p) return;
+      const turns = [
+        { role: 'user', content: p.full },
+        { role: 'assistant', content: state.draft },
+        { role: 'user', content: `AJUSTE SOLICITADO PELO MAGISTRADO:\n${instr}\n\nReescreva a minuta COMPLETA aplicando o ajuste, de forma coerente em todo o texto, e preservando sem alteração o que não depender do ajuste. Mantenha todas as regras de formatação e os textos padrão. Se o ajuste pedir algo que contrarie os autos, mantenha a fidelidade aos autos e registre o alerta no formato [ALERTA DE INCONSISTÊNCIA: ...]. Responda apenas com a minuta, terminando em "Nada mais.".` }
+      ];
+      progress('Reescrevendo a minuta...');
+      const res = await ask(turns, { tier: $('#rigor').value, onText: ({ text }) => { progress('Reescrevendo... ' + fmtInt(text.length) + ' caracteres'); streamPaint(cleanDraft(text), tipo); } });
+      state.truncated = !!res.truncated;
+      finishDraft(res.text, tipo, 'ajustada');
+      $('#refineText').value = '';
+    } catch (e) {
+      paintDraft(state.draft);
+      toast(errMsg(e), e && e.code === 'cancelled' ? '' : 'err');
+    } finally { setBusy(false); updateButtons(); showDraftUI(); }
+  }
+  async function runContinue() {
+    if (!state.draft) return;
+    setBusy(true, 'Continuando a minuta...');
+    try {
+      const tipo = state.draftTipo;
+      const p = await ensureAutosFit(tipo, byteLen(state.draft) + 1500);
+      if (!p) return;
+      const turns = [
+        { role: 'user', content: p.full },
+        { role: 'assistant', content: state.draft },
+        { role: 'user', content: 'A minuta acima foi interrompida antes do fim. Continue EXATAMENTE de onde parou, sem repetir nada do que já foi escrito e sem comentários, até concluir o dispositivo e terminar em "Nada mais.".' }
+      ];
+      const base = state.draft;
+      const res = await ask(turns, { tier: $('#rigor').value, onText: ({ text }) => { progress('Continuando... ' + fmtInt(text.length) + ' caracteres'); streamPaint(cleanDraft(base + '\n' + text), tipo); } });
+      state.truncated = !!res.truncated;
+      finishDraft(base + '\n' + res.text, tipo, 'continuada');
+    } catch (e) { paintDraft(state.draft); toast(errMsg(e), e && e.code === 'cancelled' ? '' : 'err'); }
+    finally { setBusy(false); updateButtons(); showDraftUI(); }
+  }
+
+  /* ---------- Conferência ---------- */
+  function checkCtx(tipo) {
+    const c = corpus();
+    const an = state.analysis;
+    return {
+      tipo, flags: effectiveFlags(), analysis: an,
+      autos: idIndex(readyFiles()),
+      corpusNw: readyFiles().length ? c.nw : '', corpusRaw: c.raw,
+      marcoPrescricional: an ? marcoPrescricional(an.data_ajuizamento) : null, dataAjuizamento: an && an.data_ajuizamento
+    };
+  }
+  function runChecks() {
+    if (!state.draft) { state.check = null; renderConf(); return; }
+    const hasAutos = readyFiles().length > 0;
+    const ctx = checkCtx(state.draftTipo);
+    if (!hasAutos) { ctx.autos = null; ctx.corpusNw = ''; }
+    state.check = checkDraft(state.draft, ctx);
+    // dicas de coerência entre extração e opções
+    const an = state.analysis; const fl = effectiveFlags();
+    if (an && state.draftTipo !== 'ed') {
+      if (an.rito === 'sumaríssimo' && !fl.sumarissimo) state.check.items.push({ nivel: 'aviso', regra: 'Rito', detalhe: 'Os autos indicam rito sumaríssimo, mas a opção não estava marcada ao gerar.' });
+      if (an.revelia === true && !fl.revelia) state.check.items.push({ nivel: 'aviso', regra: 'Revelia', detalhe: 'Os autos indicam revelia da reclamada, mas a opção não estava marcada ao gerar.' });
+      if (fl.procedenteTotal && fl.improcedenteTotal) state.check.items.push({ nivel: 'erro', regra: 'Opções', detalhe: 'As opções "procedência total" e "improcedência total" estão ambas marcadas.' });
+    }
+    if (!hasAutos) state.check.items.push({ nivel: 'aviso', regra: 'Autos', detalhe: 'Nenhum arquivo de autos foi enviado: IDs, folhas, citações e valores não puderam ser conferidos.' });
+    renderConf();
+  }
+  const NIV = { erro: ['Corrigir', 'n-err'], aviso: ['Conferir', 'n-warn'], ok: ['Conforme', 'n-ok'] };
+  function listChecks(items) {
+    const ord = { erro: 0, aviso: 1, ok: 2 };
+    return items.slice().sort((a, b) => ord[a.nivel] - ord[b.nivel]).map(i =>
+      `<li class="chk ${NIV[i.nivel][1]}"><span class="chk-tag">${NIV[i.nivel][0]}</span><div><strong>${esc(i.regra)}</strong><p>${esc(i.detalhe)}</p></div></li>`).join('');
+  }
+  function renderConf() {
+    const box = $('#confBody');
+    const badge = $('#confCount');
+    const ck = state.check;
+    if (!ck) { box.innerHTML = '<div class="empty"><h3>Nada para conferir ainda</h3><p>Depois que a minuta for gerada, esta aba mostra a conferência automática: cabeçalho, estrutura, textos padrão, ordem dos tópicos, IDs, folhas, citações literais, valores e custas.</p></div>'; badge.textContent = ''; badge.className = 'count'; return; }
+    const n = (k) => ck.items.filter(i => i.nivel === k).length;
+    badge.textContent = String(n('erro') + n('aviso')) === '0' ? '' : String(n('erro') + n('aviso'));
+    badge.className = 'count ' + (n('erro') ? 'c-err' : 'c-warn');
+    const std = nw(Object.values(STD).flat().join(' '));
+    const cits = ck.citacoes.map(c => {
+      const num = (c.label.match(/\d[\d.\/]*/) || [''])[0];
+      const prefix = c.label.split(' ')[0].toLowerCase();
+      const padrao = num && new RegExp('\\b' + prefix.replace('.', '') + '\\D{0,14}' + num.replace(/\./g, '\\.?').replace(/\//g, '\\/?'), 'i').test(Object.values(STD).flat().join(' ').normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+      return { ...c, padrao };
+    }).sort((a, b) => (a.padrao - b.padrao) || a.cat.localeCompare(b.cat));
+    box.innerHTML = `
+      <div class="sum">
+        <span class="sum-i n-err">${n('erro')} a corrigir</span><span class="sum-i n-warn">${n('aviso')} a conferir</span><span class="sum-i n-ok">${n('ok')} conformes</span>
+        <button id="btnFix" class="btn" ${(n('erro') + n('aviso')) && state.sample ? '' : 'disabled'}>Corrigir automaticamente</button>
+        <button id="btnRecheck" class="btn ghost">Conferir de novo</button>
+      </div>
+      <p class="muted small">A conferência compara a minuta com as regras do gabinete e com o texto dos autos enviados. Ela não substitui a leitura do magistrado.</p>
+      <ul class="chks">${listChecks(ck.items)}</ul>
+      <h3 class="h-sec">Precedentes e normas citados</h3>
+      <p class="muted small">Estas citações vêm do texto da minuta. O Claude não consulta bases oficiais: confira número e conteúdo na fonte antes de assinar.</p>
+      ${cits.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Citação</th><th>Tipo</th><th>Vezes</th><th>Situação</th></tr></thead><tbody>${cits.map(c => `<tr><td>${esc(c.label)}</td><td>${esc(c.cat)}</td><td class="num">${c.n}</td><td>${c.padrao ? '<span class="chip ok">texto padrão do gabinete</span>' : '<span class="chip warn">conferir na fonte</span>'}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Nenhuma citação normativa identificada.</p>'}`;
+  }
+  async function runFix() {
+    const ck = state.check;
+    if (!ck || !state.draft) return;
+    const probs = ck.items.filter(i => i.nivel !== 'ok');
+    if (!probs.length) return;
+    setBusy(true, 'Corrigindo os pontos apontados...');
+    try {
+      const tipo = state.draftTipo;
+      const lista = probs.map((p, i) => `${i + 1}. [${p.nivel.toUpperCase()}] ${p.regra}: ${p.detalhe}`).join('\n');
+      const extra = byteLen(state.draft) + byteLen(lista) + 2500;
+      const p = await ensureAutosFit(tipo, extra);
+      if (!p) return;
+      const turns = [
+        { role: 'user', content: p.full },
+        { role: 'assistant', content: state.draft },
+        { role: 'user', content: `A CONFERÊNCIA AUTOMÁTICA apontou os itens abaixo na minuta.\n\n${lista}\n\nCorrija SOMENTE esses itens, mantendo todo o restante idêntico. Regras: (a) para ID, folha, citação literal ou valor não localizado nos autos, procure o dado correto nos autos e substitua; se não o encontrar, remova a afirmação ou registre [ALERTA DE INCONSISTÊNCIA: ...]; nunca invente; (b) para texto padrão, restaure-o literalmente; (c) para itens de cobertura de pedidos ou de aviso que sejam falso positivo, não altere o texto; (d) preserve a decisão do mérito. Devolva a minuta COMPLETA, terminando em "Nada mais.".` }
+      ];
+      progress('Corrigindo a minuta...');
+      const res = await ask(turns, { tier: $('#rigor').value, onText: ({ text }) => { progress('Corrigindo... ' + fmtInt(text.length) + ' caracteres'); } });
+      state.truncated = !!res.truncated;
+      finishDraft(res.text, tipo, 'corrigida', true);
+      const e = state.check.items.filter(i => i.nivel === 'erro').length;
+      toast(e ? `Correção aplicada. Restam ${e} ponto(s) a corrigir.` : 'Correção aplicada. Nenhum ponto obrigatório pendente.', e ? 'warn' : 'ok');
+    } catch (e) { toast(errMsg(e), e && e.code === 'cancelled' ? '' : 'err'); }
+    finally { setBusy(false); updateButtons(); showDraftUI(); renderConf(); }
+  }
+
+  /* ---------- Parecer sobre minuta ---------- */
+  async function runParecer() {
+    const minuta = $('#minutaIn').value.trim();
+    if (!minuta) { toast('Cole ou importe a minuta a analisar.', 'err'); return; }
+    setBusy(true, 'Analisando a minuta...');
+    const out = $('#parecerOut');
+    out.innerHTML = '<p class="muted">O Claude está lendo a minuta e os autos...</p>';
+    try {
+      const head = `${SYSTEM_INSTRUCTION_ANALYSIS}\n\n=== MINUTA DE SENTENÇA (INÍCIO) ===\n${minuta}\n=== MINUTA DE SENTENÇA (FIM) ===\n\n`;
+      const tail = '\n\nProduza o parecer completo na estrutura indicada.';
+      let sec = autosSection(byteLen(head + tail) + 1000);
+      if (sec.mode === 'insuficiente') {
+        progress('Os autos são extensos: criando o fichamento...');
+        const ok = await runExtractionInner(true);
+        if (!ok) return;
+        sec = autosSection(byteLen(head + tail) + 1000);
+        if (sec.mode === 'insuficiente') throw Object.assign(new Error('Minuta e autos não cabem em um único envio.'), { code: 'prompt_too_large' });
+      }
+      if (sec.mode === 'nenhum') sec.text = '=== AUTOS ===\nNão há arquivos de autos carregados. Faça a análise com foco na coerência jurídica intrínseca e na aderência às diretrizes do gabinete, e diga expressamente que a conferência com os autos não foi possível.';
+      // conferência determinística da própria minuta
+      const ctx = checkCtx('standard');
+      if (!readyFiles().length) { ctx.autos = null; ctx.corpusNw = ''; }
+      state.parecerChecks = checkDraft(minuta, ctx);
+      progress('Analisando a minuta...');
+      const res = await ask([{ role: 'user', content: head + sec.text + tail }], { tier: $('#rigor').value, onText: ({ text }) => { progress('Analisando... ' + fmtInt(text.length) + ' caracteres'); out.innerHTML = mdToHtml(text); } });
+      state.parecer = res.text;
+      renderParecer();
+    } catch (e) {
+      if (e && e.text) { state.parecer = e.text; renderParecer(); }
+      toast(errMsg(e), e && e.code === 'cancelled' ? '' : 'err');
+    } finally { setBusy(false); updateButtons(); }
+  }
+  function renderParecer() {
+    const out = $('#parecerOut');
+    const pc = state.parecerChecks;
+    let html = '';
+    if (pc) {
+      const e = pc.items.filter(i => i.nivel === 'erro').length, a = pc.items.filter(i => i.nivel === 'aviso').length;
+      html += `<details class="det"><summary>Conferência automática da minuta: ${e} a corrigir, ${a} a conferir</summary><ul class="chks">${listChecks(pc.items)}</ul></details>`;
+    }
+    if (state.parecer) html += `<div class="rich">${mdToHtml(state.parecer)}</div><div class="actions"><button id="btnParecerCopy" class="btn ghost">Copiar parecer</button></div>`;
+    out.innerHTML = html;
+  }
+
+  /* ---------- Exportação ---------- */
+  async function saveFile(filename, data) {
+    if (!state.downloads) { toast('Download indisponível neste ambiente. Use "Copiar".', 'err'); return; }
+    try { await state.downloads.save({ filename, data }); toast('Arquivo salvo.', 'ok'); }
+    catch (e) { if (e && e.code !== 'declined') toast('Não foi possível salvar: ' + (e.message || e.code), 'err'); }
+  }
+  async function copyText(t) {
+    try { await navigator.clipboard.writeText(t); toast('Texto copiado.', 'ok'); }
+    catch (e) { toast('Seu navegador bloqueou a cópia. Selecione o texto e copie manualmente.', 'err'); }
+  }
+  async function exportDocx(text, tipo, filename) {
+    if (!window.JSZip) { toast('O gerador de DOCX não carregou. Baixe em .txt ou copie o texto.', 'err'); return; }
+    try { const blob = await buildDocx(text, tipo, window.JSZip, 'blob'); await saveFile(filename, blob); }
+    catch (e) { toast('Falha ao gerar o DOCX: ' + e.message, 'err'); }
+  }
+
+  /* ---------- Histórico ---------- */
+  function saveHistory(origem) {
+    const an = state.analysis || {};
+    const item = {
+      id: 'h' + Date.now(), ts: Date.now(), tipo: state.draftTipo, origem,
+      title: (state.draftTipo === 'ed' ? 'ED - ' : '') + (an.numero_processo || an.reclamante || 'Minuta sem título'),
+      meta: { proc: an.numero_processo || '', reclamante: an.reclamante || '', reclamada: an.reclamada || '', materia: an.materia_principal || '' },
+      text: state.draft
+    };
+    state.history.unshift(item);
+    state.history = state.history.slice(0, 30);
+    if (!lsSet('gd:history', state.history)) { state.history = state.history.slice(0, 8); lsSet('gd:history', state.history); }
+    renderHist();
+  }
+  function renderHist() {
+    const box = $('#histBody');
+    if (!state.history.length) { box.innerHTML = '<div class="empty"><h3>Histórico vazio</h3><p>As minutas geradas ficam guardadas neste navegador (até 30). Elas não são enviadas a nenhum servidor além do Claude no momento da geração.</p></div>'; return; }
+    box.innerHTML = `<ul class="hist">${state.history.map(h => `<li class="hist-item"><div><strong>${esc(h.title)}</strong><span class="muted small">${fmtDateTime(h.ts)} · ${h.tipo === 'ed' ? 'embargos' : 'sentença'} · ${esc(h.origem || '')}${h.meta.reclamada ? ' · ' + esc(h.meta.reclamada) : ''}</span></div><div class="actions"><button class="btn ghost" data-open="${h.id}">Abrir</button><button class="btn ghost" data-del="${h.id}">Excluir</button></div></li>`).join('')}</ul>`;
+  }
+
+  /* ---------- Eventos ---------- */
+  function bind() {
+    // abas
+    $$('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+    $('.tabs').addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const tabs = $$('.tab'); const i = tabs.findIndex(t => t.dataset.tab === state.activeTab);
+      const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+      setTab(n.dataset.tab); n.focus();
+    });
+    // arquivos
+    const fi = $('#fileInput');
+    fi.addEventListener('change', () => { if (fi.files.length) ingest(fi.files); fi.value = ''; });
+    const dz = $('#drop');
+    ['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('over'); }));
+    dz.addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files.length) ingest(e.dataTransfer.files); });
+    $('#fileList').addEventListener('click', (e) => {
+      const id = e.target.dataset && e.target.dataset.rm;
+      if (id) { state.files = state.files.filter(f => String(f.id) !== id); onAutosChanged(); }
+    });
+    $('#pasteToggle').addEventListener('click', () => { const b = $('#pasteBox'); b.hidden = !b.hidden; $('#pasteToggle').setAttribute('aria-expanded', String(!b.hidden)); });
+    $('#pasteAdd').addEventListener('click', () => {
+      const t = $('#pasteText').value.trim();
+      if (!t) return;
+      const pages = textToBlocks(t);
+      state.files.push({ id: ++uid, name: 'Texto colado ' + (state.files.filter(f => f.name.startsWith('Texto colado')).length + 1), kind: 'texto', pages, chars: pages.reduce((a, p) => a + p.text.length, 0), emptyPages: 0, loading: false });
+      $('#pasteText').value = ''; $('#pasteBox').hidden = true; $('#pasteToggle').setAttribute('aria-expanded', 'false');
+      onAutosChanged();
+      autoExtract();
+    });
+    // diretrizes e opções
+    let dirT = null;
+    $('#diretrizes').addEventListener('input', () => { updateButtons(); $('#saveState').textContent = 'Salvando...'; clearTimeout(dirT); dirT = setTimeout(() => { saveDirectives(); state.corpusCache.sig = ''; }, 400); });
+    [['fSum', 'sumarissimo'], ['fRev', 'revelia'], ['fProc', 'procedenteTotal'], ['fImproc', 'improcedenteTotal']].forEach(([id, k]) => {
+      $('#' + id).addEventListener('change', (e) => {
+        state.flags[k] = e.target.checked;
+        if (e.target.checked && k === 'procedenteTotal') { state.flags.improcedenteTotal = false; $('#fImproc').checked = false; }
+        if (e.target.checked && k === 'improcedenteTotal') { state.flags.procedenteTotal = false; $('#fProc').checked = false; }
+        saveDirectives();
+      });
+    });
+    $$('input[name=tipo]').forEach(r => r.addEventListener('change', () => { if (r.checked) { state.tipo = r.value; saveDirectives(); } }));
+    $('#rigor').addEventListener('change', saveDirectives);
+    $('#optExtract').addEventListener('change', saveDirectives);
+    // ações
+    $('#btnGenerate').addEventListener('click', runGenerate);
+    $('#btnStop').addEventListener('click', stopNow);
+    $('#btnRefine').addEventListener('click', runRefine);
+    $('#btnContinue').addEventListener('click', runContinue);
+    $('#btnParecer').addEventListener('click', runParecer);
+    $('#btnOpenParecer').addEventListener('click', () => setTab('parecer'));
+    // minuta
+    $('#btnEdit').addEventListener('click', () => {
+      state.editing = !state.editing;
+      if (state.editing) $('#editor').value = state.draft;
+      else { state.draft = $('#editor').value; paintDraft(state.draft); runChecks(); }
+      showDraftUI();
+    });
+    let edT = null;
+    $('#editor').addEventListener('input', () => { clearTimeout(edT); edT = setTimeout(() => { state.draft = $('#editor').value; runChecks(); }, 700); });
+    $('#btnCopy').addEventListener('click', () => copyText(state.editing ? $('#editor').value : state.draft));
+    $('#btnDocx').addEventListener('click', () => exportDocx(state.editing ? $('#editor').value : state.draft, state.draftTipo, safeFilename(state.analysis, state.draftTipo)));
+    // parecer: importar minuta
+    $('#minutaFile').addEventListener('change', async (e) => {
+      const f = e.target.files[0]; e.target.value = '';
+      if (!f) return;
+      try { const r = await readAny(f); $('#minutaIn').value = r.pages.map(p => p.text).join('\n'); toast('Minuta importada: ' + f.name, 'ok'); }
+      catch (err) { toast(err.message, 'err'); }
+    });
+    $('#btnUseDraft').addEventListener('click', () => { if (state.draft) { $('#minutaIn').value = state.draft; } else toast('Ainda não há minuta gerada.', 'err'); });
+    // delegação nos painéis
+    document.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!t || !t.closest) return;
+      const fl = t.closest('[data-flag]');
+      if (fl) { const k = fl.dataset.flag; state.flags[k] = true; $(k === 'sumarissimo' ? '#fSum' : '#fRev').checked = true; saveDirectives(); renderResumo(); toast('Opção marcada.', 'ok'); return; }
+      const dl = t.closest('[data-dl]'); if (dl) { state.deadlineFilter = dl.dataset.dl; renderPrazos(); return; }
+      const ins = t.closest('[data-ins]');
+      if (ins) {
+        const p = ($('#prazosBody') || {})._shown[parseInt(ins.dataset.ins, 10)];
+        const ta = $('#diretrizes'); const line = `- [${p.tipo.toUpperCase()}]: ${p.data} - ${p.descricao}`;
+        ta.value = ta.value.trim() ? ta.value.trim() + '\n' + line : line; saveDirectives(); toast('Inserido nas diretrizes.', 'ok'); return;
+      }
+      const op = t.closest('[data-open]');
+      if (op) { const h = state.history.find(x => x.id === op.dataset.open); if (h) { state.draft = h.text; state.draftTipo = h.tipo; state.truncated = false; state.editing = false; paintDraft(h.text, h.tipo); $('#editor').value = h.text; runChecks(); showDraftUI(); setTab('minuta'); } return; }
+      const del = t.closest('[data-del]');
+      if (del) { state.history = state.history.filter(x => x.id !== del.dataset.del); lsSet('gd:history', state.history); renderHist(); return; }
+      if (t.closest('#btnFix')) { runFix(); return; }
+      if (t.closest('#btnRecheck')) { runChecks(); toast('Conferência atualizada.', 'ok'); return; }
+      if (t.closest('#btnParecerCopy')) { copyText(state.parecer); return; }
+    });
+  }
+
+  /* ---------- Inicialização ---------- */
+  async function init() {
+    loadDirectives();
+    state.history = lsGet('gd:history', []);
+    bind();
+    renderFiles(); renderResumo(); renderPrazos(); renderConf(); renderHist(); showDraftUI(); renderParecer();
+    setTab('inicial');
+    const st = $('#claudeStatus');
+    let tries = 0;
+    try {
+      if (window.claude && window.claude.use) {
+        state.sample = await window.claude.use('sample');
+        state.downloads = await window.claude.use('downloads');
+      }
+    } catch (e) { state.sample = null; }
+    if (state.sample) { st.textContent = 'Claude conectado'; st.className = 'status on'; }
+    else { st.textContent = 'Claude indisponível aqui'; st.className = 'status off'; toast('Para usar o Claude, abra este artefato dentro do Claude e autorize o uso quando solicitado.', 'warn'); }
+    $('#btnDocx').hidden = !state.downloads;
+    updateButtons();
+  }
+  init();
+})();
+
+</script>

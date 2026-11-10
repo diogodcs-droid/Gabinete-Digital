@@ -1,0 +1,34 @@
+const {JSDOM}=require('jsdom');const fs=require('fs');
+let html=fs.readFileSync('../gabinete-digital.html','utf8').replace(/<script src="[^"]+"><\/script>/g,'').replace(/<link[^>]+>/g,'');
+const calls=[];
+const dom=new JSDOM(html,{runScripts:'outside-only',pretendToBeVisual:true,url:'https://x.test/'});
+const w=dom.window;
+w.JSZip=require('jszip');w.mammoth=require('mammoth');
+const saved=[];
+const sample=async(inp,o)=>{const text=typeof inp==='string'?inp:inp.map(m=>m.content).join('\n');calls.push(text.length);
+ if(/EXTRA[ÇC][ÃA]O ESTRUTURADA/.test(text)||/Responda unicamente com o JSON/.test(text)){return {text:'{}'}}
+ return {text:'SENTENÇA\n\nPROCESSO Nº 0000123-45.2024.5.04.0731\n\nI – RELATÓRIO\n\nTexto.\n\nNada mais.',truncated:false}};
+sample.json=async()=>({numero_processo:'0000123-45.2024.5.04.0731',reclamante:'FULANO',reclamada:'EMPRESA',data_ajuizamento:'10/05/2024',rito:'ordinário',prazos_processuais:[],alertas:[]});
+w.claude={use:async n=>n==='sample'?sample:{save:async x=>{saved.push(x.filename)}}};
+w.eval(fs.readFileSync('inline.js','utf8').replace(/^/,''));
+(async()=>{
+ const d=w.document;await new Promise(r=>setTimeout(r,50));
+ console.log('status:',d.getElementById('claudeStatus').textContent);
+ d.getElementById('pasteToggle').click();
+ d.getElementById('pasteText').value='Processo nº 0000123-45.2024.5.04.0731. Reclamante FULANO ajuizou ação em 10/05/2024 contra EMPRESA. Audiência em 20/06/2024. Id. abc1234 fl. 3';
+ d.getElementById('pasteAdd').click();
+ d.getElementById('diretrizes').value='Julgar procedente em parte. Horas extras.';
+ d.getElementById('diretrizes').dispatchEvent(new w.Event('input'));
+ await new Promise(r=>setTimeout(r,20));
+ console.log('files:',d.querySelectorAll('.file').length,'gen disabled:',d.getElementById('btnGenerate').disabled);
+ await new Promise(r=>setTimeout(r,400));console.log('auto resumo:',d.getElementById('inicialBody').textContent.includes('0000123'));d.getElementById('btnGenerate').click();
+ await new Promise(r=>setTimeout(r,800));
+ console.log('paper:',d.getElementById('paper').textContent.slice(0,60).replace(/\n/g,' '));
+ console.log('resumo has proc:',d.getElementById('inicialBody').textContent.includes('0000123'));
+ console.log('conf:',d.getElementById('confBody').textContent.slice(0,200).replace(/\s+/g,' '));
+ d.getElementById('btnDocx').click();await new Promise(r=>setTimeout(r,300));
+ console.log('saved:',saved,'calls:',calls);
+ console.log('hist:',d.querySelectorAll('.hist-item').length);
+ process.exit(0);
+})().catch(e=>{console.error('FAIL',e);process.exit(1)});
+w.addEventListener('error',e=>console.error('WINERR',e.message));
